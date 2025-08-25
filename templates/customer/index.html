@@ -1,0 +1,60 @@
+{%extends "base.html"%}
+
+{%block title%} Home Page{%endblock%}
+
+{%block content%}
+<!-- Customer Page -->
+                <div id="customerPage" class="page active-page">
+                    <h2 class="text-2xl font-bold mb-6">Today Available Menu</h2>
+                    
+                    <!-- Menu Filters -->
+                    <div class="flex flex-wrap gap-4 mb-6">
+                        <button class="bg-primary-500 text-white px-4 py-2 rounded-md">All Items</button>
+                        <button class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Recipes</button>
+                        <button class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Drinks</button>
+                    </div>
+                    
+                    <!-- Menu Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                        <!-- Menu Items -->
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+                            <div class="p-4">
+                                <div class="flex justify-between items-start">
+                                    <h3 class="text-lg font-semibold">Grilled Salmon</h3>
+                                    <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">Available</span>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Fresh salmon with herbs and lemon butter sauce</p>
+                                <div class="flex justify-between items-center mt-4">
+                                    <span class="text-primary-600 dark:text-primary-400 font-bold">$18.99</span>
+                                    <button class="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-md text-sm">Add to Order</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- More menu items would go here -->
+                    </div>
+                    
+                    <!-- Order Summary -->
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+                        <h3 class="text-xl font-semibold mb-4">Current Order</h3>
+                        <div class="border-b dark:border-gray-700 pb-4 mb-4">
+                            <div class="flex justify-between mb-2">
+                                <span>2 x Grilled Salmon</span>
+                                <span>$37.98</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>1 x Beef Burger</span>
+                                <span>$14.50</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between font-bold text-lg">
+                            <span>Total</span>
+                            <span>$52.48</span>
+                        </div>
+                        <div class="mt-6 flex justify-end space-x-4">
+                            <button class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Clear Order</button>
+                            <button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Process Payment</button>
+                        </div>
+                    </div>
+                </div>
+{%endblock%}

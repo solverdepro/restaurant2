@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+{% include "includes/head.html"%}
+</head>
+<body>
+    <body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 min-h-screen transition-colors duration-200">
+{%include "includes/sidebar.html"%}
+
+{%include "includes/navbar.html"%}
+
+<main class="p-8">
+{%block content%}
+
+{%endblock%}
+
+</main>
+
+{%include "includes/footer.html"%}
+
+
+        <script>
+        // Function to toggle between light and dark mode
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Check for saved theme preference or respect OS preference
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            // Initialize charts
+            initCharts();
+        });
+
+        // Function to show the selected page
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active-page');
+            });
+            
+            // Show the selected page
+            document.getElementById(pageId).classList.add('active-page');
+            
+            // Update the page title
+            const pageTitle = document.getElementById('pageTitle');
+            pageTitle.textContent = document.getElementById(pageId).querySelector('h2').textContent;
+            
+            // Update active nav link
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('nav-active');
+            });
+            
+            // Find the clicked link and make it active
+            event.target.classList.add('nav-active');
+        }
+
+        // Initialize charts
+        function initCharts() {
+            // Sales Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Sales ($)',
+                        data: [1200, 1900, 1500, 2100, 2500, 2200, 1800],
+                        borderColor: '#e8731e',
+                        tension: 0.1,
+                        fill: true,
+                        backgroundColor: 'rgba(232, 115, 30, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+            
+            // Inventory Chart
+            const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+            new Chart(inventoryCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Tomatoes', 'Chicken', 'Lettuce', 'Pasta', 'Rice', 'Oil'],
+                    datasets: [{
+                        label: 'Weekly Usage (kg)',
+                        data: [120, 150, 80, 60, 90, 30],
+                        backgroundColor: '#e8731e'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>
+
+
+
+
+

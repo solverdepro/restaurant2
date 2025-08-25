@@ -1,0 +1,51 @@
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Misosi Pluss++{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#fef7ee',
+                            100: '#fdecd6',
+                            200: '#f9d5ad',
+                            300: '#f3b679',
+                            400: '#ec8e43',
+                            500: '#e8731e',
+                            600: '#d95a14',
+                            700: '#b44413',
+                            800: '#913717',
+                            900: '#752e16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .page { display: none; }
+        .active-page { display: block; }
+        .nav-active { 
+            background-color: rgba(232, 115, 30, 0.1);
+            border-right: 3px solid #e8731e;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .action-card:hover {
+            transform: translateY(-3px);
+        }
+        .nav-active { 
+            background-color: rgba(232, 115, 30, 0.1);
+            border-right: 3px solid #e8731e;
+        }
+        .chart-container {
+            position: relative;
+            height: 250px;
+        }
+    </style>
