@@ -15,7 +15,7 @@ def register_product(request):
             category = request.POST.get('category')
             manufacturing_date = request.POST.get('manufacturing_date')
             expiration_date = request.POST.get('expiration_date')
-            amount = request.POST.get('amount')
+            quantity = request.POST.get('quantity')
             unit = request.POST.get('unit')
             supplier_name = request.POST.get('supplier_name')
             supplier_contact = request.POST.get('supplier_contact')
@@ -23,11 +23,11 @@ def register_product(request):
             shelf_number = request.POST.get('shelf_number')
             section = request.POST.get('section')
             minimum_stock_level = request.POST.get('minimum_stock_level')
-            maximum_stock_level = request.POST.get('maximum_stock_level')
+            price = request.POST.get('price')
             notes = request.POST.get('notes', '')
 
             # Validate required fields
-            if not all([name, batch_number, category, manufacturing_date, expiration_date, amount, unit]):
+            if not all([name, batch_number, category, manufacturing_date, expiration_date, quantity, unit]):
                 messages.error(request, "Please fill in all required fields.")
                 return render(request, 'inventory/add_product.html')
 
@@ -54,12 +54,12 @@ def register_product(request):
                 category=category,
                 manufacturing_date=manufacturing_date,
                 expiration_date=expiration_date,
-                amount=amount,
+                quantity=quantity,
                 unit=unit,
                 supplier=supplier,
                 storage_location=storage_location,
                 minimum_stock_level=minimum_stock_level if minimum_stock_level else None,
-                maximum_stock_level=maximum_stock_level if maximum_stock_level else None,
+                price=price,
                 notes=notes
             )
             product.save()
