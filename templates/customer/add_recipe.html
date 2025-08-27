@@ -42,16 +42,22 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Select ingredients used in this recipe</p>
                             
                             <!-- Ingredient list-->
-                            <select multiple name="ingredients[]" required class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500" size="10">
+                            <select name="ingredients[]" multiple id="ingredientSelect" required class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500" size="10">
                                   {% for product in products %}
-                                  <option value="{{ product.id }}">{{ product }}</option>
-                                  {% endfor %}
+                                    <option value="{{ product.id }}" data-unit="{{ product.unit }}">{{ product }}</option>                                  {% endfor %}
                             </select>
                             
                             <!-- Ingredients Grid -->
                             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4" id="ingredientsGrid">
                                 <!-- Ingredients will be populated here -->
                             </div>
+
+                            <!-- Selected Ingredients -->
+                            <div id="selectedIngredients" class="mt-4">
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Enter Quantity Of Each Ingredient Used Per Order:</p>
+                            <div id="ingredientInputs" class="grid gap-4"></div>
+                                 </div>
+                             </div>
                             
                         <!-- Recipe Image -->
                         <div>
@@ -80,4 +86,39 @@
             </main>
         </div>
     </div>
+    
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('ingredientSelect');
+    const ingredientInputs = document.getElementById('ingredientInputs');
+    const selectedIds = new Set(); // Track selected product IDs to prevent duplicates
+    
+    function updateSelectedIngredients() {
+        ingredientInputs.innerHTML = '';
+        selectedIds.clear(); // Clear previous selections
+        
+        Array.from(select.selectedOptions).forEach(option => {
+            const productId = option.value;
+            if (!selectedIds.has(productId)) { // Only add if not already selected
+                selectedIds.add(productId);
+                const productName = option.text;
+                const productUnit = option.getAttribute('data-unit');
+                
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2 mb-2';
+                div.innerHTML = `
+                    <input type="hidden" name="ingredients[]" value="${productId}">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">${productName}</span>
+                    <input type="number" name="quantity_${productId}" min="0" step="0.01" required class="w-24 px-2 py-1 border rounded-md dark:bg-gray-700 dark:border-gray-800" placeholder="Quantity">
+                    <span class="text-sm text-gray-500 dark:text-gray-400">${productUnit}</span>
+                    <button type="button" class="text-red-500 hover:text-red-700" onclick="this.parentElement.remove(); selectedIds.delete('${productId}');">Remove</button>
+                `;
+                ingredientInputs.appendChild(div);
+            }
+        });
+    }
+    
+    select.addEventListener('change', updateSelectedIngredients);
+});
+</script>
 {%endblock%}

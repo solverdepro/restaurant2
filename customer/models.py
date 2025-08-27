@@ -1,5 +1,17 @@
 from django.db import models
-from inventory.models import Product  # Assuming Product is in the same models.py file
+from inventory.models import Product  
+
+class RecipeIngredient(models.Model):
+    recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE, related_name='recipe_ingredients')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2)
+    unit = models.CharField(max_length=20, choices=Product.UNIT_CHOICES)
+
+    def __str__(self):
+        return f"{self.product} - {self.quantity} {self.unit} for {self.recipe}"
+
+    class Meta:
+        unique_together = ['recipe', 'product']
 
 class Recipe(models.Model):
     CATEGORY_CHOICES = [

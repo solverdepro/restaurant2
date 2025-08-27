@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Recipe, Product
+from .models import Recipe, Product,RecipeIngredient
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 
@@ -36,6 +36,22 @@ def register_recipe(request):
                 'error': 'Invalid price format.'
             })
         
+        # Validate quantities
+        quantities = {}
+        for product_id in ingredient_ids:
+            quantity = request.POST.get(f'quantity_{product_id}')
+            if not quantity:
+                return render(request, 'customer/add_recipe.html', {
+                    'products': products,
+                    'error': 'Quantity missing for one or more ingredients.'
+                })
+            try:
+                quantities[product_id] = Decimal(quantity)
+            except:
+                return render(request, 'customer/add_recipe.html', {
+                    'products': products,
+                    'error': 'Invalid quantity format.'
+                })
         # Create recipe
         recipe = Recipe(
             name=name,
@@ -48,8 +64,18 @@ def register_recipe(request):
         recipe.save()
         
         # Add ingredients
-        if ingredient_ids:
-            recipe.ingredients.set(ingredient_ids)
+        # if ingredient_ids:
+        #     recipe.ingredients.set(ingredient_ids)
+
+                # Add ingredients with quantities and units
+        for product_id in ingredient_ids:
+            product = Product.objects.get(id=product_id)
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                product=product,
+                quantity=quantities[product_id],
+                unit=product.unit
+                )
         
         return redirect('homeview')  # Replace with your success URL, e.g., recipe list
         
