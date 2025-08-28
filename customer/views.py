@@ -80,3 +80,4 @@ def register_recipe(request):
         return redirect('homeview')  # Replace with your success URL, e.g., recipe list
         
     return render(request, 'customer/add_recipe.html', {'products': products})
+
