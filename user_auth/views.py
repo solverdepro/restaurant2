@@ -1,8 +1,11 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import authenticate, login as auth_login,update_session_auth_hash
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Staff
+from customer.models import Recipe
+from django.contrib import messages
 import re
 
 # Create your views here.
@@ -87,3 +90,102 @@ def register_staff(request):
 
         return redirect('homeview')  # Replace with your success URL
     return render(request,'user_auth/add_staff.html')
+
+
+def login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Authenticate user
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            messages.error(request, 'Invalid username or password.')
+            return render(request, 'user_auth/login.html')
+
+        # Log in the user
+        auth_login(request, user)
+
+        # Get the user's role from Staff model
+        try:
+            staff = user.staff_profile
+            role = staff.role
+        except Staff.DoesNotExist:
+            messages.error(request, 'No staff profile found for this user.')
+            return render(request, 'user_auth/login.html')
+
+        # Redirect based on role
+        if role == 'Admin':
+            return redirect('admindashboard')
+        elif role == 'Chef':
+            return redirect('chef_dashboard')
+        elif role == 'Cashier':
+            return redirect('cashierDashboard')
+        elif role == 'Inventory':
+            return redirect('inventory_dashboard')
+        else:
+            messages.error(request, 'Unknown role.')
+            return render(request, 'user_auth/login.html')
+
+    return render(request, 'user_auth/login.html')
+
+def change_password(request):
+    if request.method == 'POST':
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        if not all([current_password, new_password, confirm_password]):
+            messages.error(request, 'All fields are required.')
+            return render(request, 'user_auth/change_password.html')
+
+        if new_password != confirm_password:
+            messages.error(request, 'New password and confirm password do not match.')
+            return render(request, 'user_auth/change_password.html')
+
+        user = request.user
+        if not user.check_password(current_password):
+            messages.error(request, 'Current password is incorrect.')
+            return render(request, 'user_auth/change_password.html')
+
+        try:
+            user.set_password(new_password)
+            user.save()
+            update_session_auth_hash(request, user)  # Keep user logged in
+            messages.success(request, 'Password updated successfully.')
+            return redirect('cashierDashboard')
+        except ValidationError as e:
+            messages.error(request, str(e))
+            return render(request, 'user_auth/change_password.html')
+
+    return render(request, 'user_auth/change_password.html')
+
+
+def manage_availability(request):
+    if request.method == 'POST':
+        recipe_ids = request.POST.getlist('recipe_ids[]')
+        for recipe in Recipe.objects.all():
+            is_available = str(recipe.id) in recipe_ids
+            recipe.is_available = is_available
+            recipe.save()
+        messages.success(request, 'Recipe availability updated successfully.')
+        return redirect('cashier_dashboard')
+    
+    recipes = Recipe.objects.all()
+    return render(request, 'customer/manage_availability.html', {'recipes': recipes})
+
+def cashier_dashboard(request):
+    if request.user.staff_profile.role != 'Cashier':
+        messages.error(request, 'You are not authorized to access this page.')
+        return redirect('login_view')
+    recipes = Recipe.objects.all()
+    return render(request,'user_auth/cashier_dashboard.html',{'recipes':recipes})
+
+def chef_dashboard(request):
+    return render(request,'user_auth/chef_dashboard.html')
+
+def inventory_dashboard(request):
+    return render(request,'user_auth/inventory_dashboard.html')
+
+def admin_dashboard(request):
+    return render(request,'customer/admin_dashboard.html')

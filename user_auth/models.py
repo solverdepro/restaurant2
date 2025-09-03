@@ -3,8 +3,10 @@ from django.contrib.auth.models import User
 
 class Staff(models.Model):
     ROLE_CHOICES = [
+        ('Admin', 'Admin'),
         ('Chef', 'Chef'),
         ('Cashier', 'Cashier'),
+        ('Inventory', 'Inventory'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='staff_profile')

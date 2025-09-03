@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from .models import Recipe, Product,RecipeIngredient
 from django.core.exceptions import ValidationError
 from decimal import Decimal
+from django.contrib import messages
+
 
 def home(request):
     return render(request,'customer/index.html')
@@ -81,3 +83,15 @@ def register_recipe(request):
         
     return render(request, 'customer/add_recipe.html', {'products': products})
 
+# def manage_availability(request):
+#     if request.method == 'POST':
+#         recipe_ids = request.POST.getlist('recipe_ids[]')
+#         for recipe in Recipe.objects.all():
+#             is_available = str(recipe.id) in recipe_ids
+#             recipe.is_available = is_available
+#             recipe.save()
+#         messages.success(request, 'Recipe availability updated successfully.')
+#         return redirect('cashier_dashboard')
+    
+#     recipes = Recipe.objects.all()
+#     return render(request, 'customer/manage_availability.html', {'recipes': recipes})
