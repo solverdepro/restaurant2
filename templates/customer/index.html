@@ -47,7 +47,10 @@
                             <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
                         </svg>
                     </button>
-                        <a href="{%url 'userLogin'%}"><button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Login</button></a>
+                    <!-- <a href="{%url 'userLogin'%}"><button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Login</button></a> -->
+                    <a href="{%url 'logout'%}"><button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">logout</button></a>
+                    <a href="{%url 'cashierDashboard'%}"><button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Cashier Dashboard</button></a>
+
                </div>
             </div>
         </div>
@@ -72,6 +75,11 @@
               {% endfor %}
           </div>
      {% endif %}
+
+           <!-- Search Bar -->
+            <div class="mb-6">
+             <input type="text" id="searchInput" placeholder="Search recipes..." class="w-full md:w-1/2 px-4 py-2 border rounded-md dark:border-gray-600 dark:bg-gray-700"/>
+            </div>
 
             <!-- Menu Filters -->
            <div class="flex flex-wrap gap-4 mb-6">
@@ -157,11 +165,6 @@
             });
 
             document.getElementById('orderTotal').textContent = `${total.toFixed(2)}(Tsh)`;
-            
-            // Update hidden input for form submission
-            // const orderItemsInput = document.getElementById('orderItemsInput');
-            // orderItemsInput.value = orders.map(o => `${o.id}:${o.quantity}`).join(',');
-            // Remove previous hidden inputs
             document.querySelectorAll('input[name="order_items[]"]').forEach(e => e.remove());
 
                     // Add a hidden input for each order
@@ -202,12 +205,19 @@
             const mainCourseBtn = document.getElementById('mainCourse');
             const drinksBtn = document.getElementById('drinks');
 
-            function displayRecipes(filter = 'all') {
+            function displayRecipes(filter = 'all', searchQuery = '') {
                 menuGrid.innerHTML = '';
-                const filteredRecipes = filter === 'all' 
+                let filteredRecipes = filter === 'all' 
                     ? recipes 
                     : recipes.filter(r => r.category === (filter === 'main' ? 'Main Course' : 'Beverage'));
-                
+            
+                if (searchQuery) {
+                    filteredRecipes = filteredRecipes.filter(r =>
+                        r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        r.description.toLowerCase().includes(searchQuery.toLowerCase())
+                    );
+                }
+            
                 if (filteredRecipes.length === 0) {
                     menuGrid.innerHTML = '<p class="text-gray-600 dark:text-gray-400 col-span-full text-center">No items available.</p>';
                     return;
@@ -232,6 +242,18 @@
                     menuGrid.appendChild(div);
                 });
             }
+
+
+
+
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+    const query = e.target.value;
+    const activeFilter = 
+        allItemsBtn.classList.contains('bg-primary-500') ? 'all' :
+        mainCourseBtn.classList.contains('bg-primary-500') ? 'Main Course' : 'drinks';
+    
+    displayRecipes(activeFilter, query);
+});
 
             // Filter button handlers
             allItemsBtn.addEventListener('click', () => {
@@ -316,10 +338,10 @@
             // Initial display
             allItemsBtn.classList.add('bg-primary-500', 'text-white');
             displayRecipes('all');
-        });
+           });
 
             // Auto dismiss Django messages after 5 seconds
-    document.addEventListener('DOMContentLoaded', () => {
+         document.addEventListener('DOMContentLoaded', () => {
         const messages = document.getElementById('messages');
         if (messages) {
             setTimeout(() => {

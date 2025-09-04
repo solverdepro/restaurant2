@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login as auth_login,update_session_auth_hash
+from django.contrib.auth import authenticate, login as auth_login,logout,update_session_auth_hash
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from .models import Staff
@@ -8,6 +8,7 @@ from customer.models import Recipe
 from django.contrib import messages
 import re
 import logging
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
@@ -123,7 +124,7 @@ def login(request):
         elif role == 'Chef':
             return redirect('chef_dashboard')
         elif role == 'Cashier':
-            return redirect('cashierDashboard')
+            return redirect('menu')
         elif role == 'Inventory':
             return redirect('inventory_dashboard')
         else:
@@ -167,7 +168,7 @@ def change_password(request):
 def manage_availability(request):
     if not request.user.is_authenticated:
         messages.error(request, 'Please log in to access this page.')
-        return redirect('login')
+        return redirect('userLogin')
     
     if request.method == 'POST':
         logger.debug(f"POST data: {request.POST}")
@@ -185,14 +186,14 @@ def manage_availability(request):
             return redirect('cashierDashboard')
     
     return redirect('cashierDashboard')
-
+    
+@login_required
 def cashier_dashboard(request):
-    if not request.user.is_authenticated:
-        messages.error(request, 'Please log in to access this page.')
-        return redirect('login_view')
+    # Check role
     if hasattr(request.user, 'staff_profile') and request.user.staff_profile.role != 'Cashier':
         messages.error(request, 'You are not authorized to access this page.')
-        return redirect('login_view')
+        return redirect('login_view')  # use your login route name
+    
     recipes = Recipe.objects.all()
     return render(request, 'user_auth/cashier_dashboard.html', {'recipes': recipes})
 
@@ -204,3 +205,8 @@ def inventory_dashboard(request):
 
 def admin_dashboard(request):
     return render(request,'customer/admin_dashboard.html')
+
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'You have been logged out.')
+    return redirect('menu')

@@ -5,6 +5,7 @@ from decimal import Decimal
 from datetime import datetime
 from django.contrib import messages
 import logging
+from django.contrib.auth.decorators import login_required
 
 
 logger = logging.getLogger(__name__)
@@ -126,16 +127,20 @@ def menu_view(request):
                     })
                 
                 # Store order details in session
+                         # ✅ check authentication first
+                    if not request.user.is_authenticated:
+                             messages.error(request, "Failed To Confirm Because You Have Not Login")
+                             return redirect("userLogin") 
+
                 request.session['order_details'] = {
                     'items': order_details,
                     'total': float(total),
                     'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                     'cashier': request.user.get_full_name() or request.user.username
                 }
-                messages.success(request, 'Order confirmed successfully. Inventory updated.')
+                messages.success(request, 'Order confirmed successfully..')
                 return redirect('orderConfirmation')        
                 
-                messages.success(request, 'Order confirmed successfully. Inventory updated.')
             except Exception as e:
                 logger.error(f"Error confirming order: {str(e)}")
                 messages.error(request, f'Failed to confirm order: {str(e)}')
@@ -144,7 +149,7 @@ def menu_view(request):
     
     recipes = Recipe.objects.filter(is_available=True)
     return render(request, 'customer/index.html', {'recipes': recipes})
-
+@login_required
 def order_confirmation(request):
     order_details = request.session.get('order_details')
     if not order_details:

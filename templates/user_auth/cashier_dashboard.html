@@ -108,9 +108,9 @@
                     </svg>
                 </button>
                 <div class="relative">
-                    <a href="{%url 'userLogin'%}"><button class="flex items-center space-x-2">
+                    <a href="{%url 'changePassword'%}"><button class="flex items-center space-x-2">
                         <div class="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold">C</div>
-                        <span>Login</span>
+                        <span>Change Password</span>
                     </button></a>
                 </div>
             </div>
@@ -120,7 +120,7 @@
     <main class="p-8 flex-grow">        
         <!-- Action Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <!-- <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <div class="flex items-center mb-4">
                     <div class="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,7 +131,7 @@
                 </div>
                 <p class="text-gray-600 dark:text-gray-400 mb-4">Update your account password for security purposes</p>
                 <a href="{% url 'changePassword'%}"><button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md transition-colors">Change Password</button></a>
-            </div>
+            </div> -->
             
             <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
                 <div class="flex items-center mb-4">
@@ -156,7 +156,7 @@
                     <h4 class="text-lg font-semibold ml-4">View Menu</h4>
                 </div>
                 <p class="text-gray-600 dark:text-gray-400 mb-4">Go to the customer menu to take orders</p>
-                <a href="{%url 'menu'%}"><button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md transition-colors">Go to Menu</button></a>
+                <a href="{% url 'menu'%}"><button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md transition-colors">Go to Menu</button></a>
             </div>
         </div>
 
