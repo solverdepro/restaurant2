@@ -3,10 +3,12 @@ from .models import Recipe, Product,RecipeIngredient
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 from django.contrib import messages
+import logging
 
 
-def home(request):
-    return render(request,'customer/index.html')
+logger = logging.getLogger(__name__)
+# def home(request):
+#     return render(request,'customer/index.html')
 
 def admin_dashboard(request):
     return render(request,'customer/admin_dashboard.html')
@@ -64,34 +66,55 @@ def register_recipe(request):
         )
         recipe.full_clean()  # Validate model fields
         recipe.save()
-        
-        # Add ingredients
-        # if ingredient_ids:
-        #     recipe.ingredients.set(ingredient_ids)
 
                 # Add ingredients with quantities and units
         for product_id in ingredient_ids:
             product = Product.objects.get(id=product_id)
-            RecipeIngredient.objects.create(
+            RecipeIngredient.objects.update_or_create(
                 recipe=recipe,
                 product=product,
                 quantity=quantities[product_id],
                 unit=product.unit
                 )
         
-        return redirect('homeview')  # Replace with your success URL, e.g., recipe list
+        return redirect('admindashboard')  # Replace with your success URL, e.g., recipe list
         
     return render(request, 'customer/add_recipe.html', {'products': products})
 
-# def manage_availability(request):
-#     if request.method == 'POST':
-#         recipe_ids = request.POST.getlist('recipe_ids[]')
-#         for recipe in Recipe.objects.all():
-#             is_available = str(recipe.id) in recipe_ids
-#             recipe.is_available = is_available
-#             recipe.save()
-#         messages.success(request, 'Recipe availability updated successfully.')
-#         return redirect('cashier_dashboard')
+def menu_view(request):
+    if request.method == 'POST':
+        logger.debug(f"POST data: {request.POST}")
+        action = request.POST.get('action')
+        
+        if action == 'confirm_order':
+            order_items = request.POST.getlist('order_items[]')  # Format: recipe_id:quantity
+            try:
+                for item in order_items:
+                    recipe_id, quantity = item.split(':')
+                    quantity = int(quantity)
+                    if quantity <= 0:
+                        continue
+                    
+                    recipe = Recipe.objects.get(id=recipe_id)
+                    recipe_ingredients = RecipeIngredient.objects.filter(recipe=recipe)
+                    
+                    # Check and update ingredient quantities
+                    for ri in recipe_ingredients:
+                        product = ri.product
+                        required_quantity = ri.quantity * quantity
+                        if product.quantity < required_quantity:
+                            messages.error(request, f"Insufficient stock for {product.name} to fulfill {recipe.name} order.")
+                            return render(request, 'customer/index.html', {'recipes': Recipe.objects.filter(is_available=True)})
+                        
+                        product.quantity -= required_quantity
+                        product.save()
+                
+                messages.success(request, 'Order confirmed successfully. Inventory updated.')
+            except Exception as e:
+                logger.error(f"Error confirming order: {str(e)}")
+                messages.error(request, f'Failed to confirm order: {str(e)}')
+        
+        return render(request, 'customer/index.html', {'recipes': Recipe.objects.filter(is_available=True)})
     
-#     recipes = Recipe.objects.all()
-#     return render(request, 'customer/manage_availability.html', {'recipes': recipes})
+    recipes = Recipe.objects.filter(is_available=True)
+    return render(request, 'customer/index.html', {'recipes': recipes})

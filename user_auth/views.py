@@ -7,8 +7,11 @@ from .models import Staff
 from customer.models import Recipe
 from django.contrib import messages
 import re
+import logging
+
 
 # Create your views here.
+logger = logging.getLogger(__name__)
 
 def register_staff(request):
     if request.method == 'POST':
@@ -162,24 +165,36 @@ def change_password(request):
 
 
 def manage_availability(request):
-    if request.method == 'POST':
-        recipe_ids = request.POST.getlist('recipe_ids[]')
-        for recipe in Recipe.objects.all():
-            is_available = str(recipe.id) in recipe_ids
-            recipe.is_available = is_available
-            recipe.save()
-        messages.success(request, 'Recipe availability updated successfully.')
-        return redirect('cashier_dashboard')
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please log in to access this page.')
+        return redirect('login')
     
-    recipes = Recipe.objects.all()
-    return render(request, 'customer/manage_availability.html', {'recipes': recipes})
+    if request.method == 'POST':
+        logger.debug(f"POST data: {request.POST}")
+        recipe_ids = request.POST.getlist('recipe_ids[]')
+        try:
+            for recipe in Recipe.objects.all():
+                is_available = str(recipe.id) in recipe_ids
+                recipe.is_available = is_available
+                recipe.save()
+            messages.success(request, 'Recipe availability updated successfully.')
+            return redirect('cashierDashboard')
+        except Exception as e:
+            logger.error(f"Error updating availability: {str(e)}")
+            messages.error(request, f'Failed to update availability: {str(e)}')
+            return redirect('cashierDashboard')
+    
+    return redirect('cashierDashboard')
 
 def cashier_dashboard(request):
-    if request.user.staff_profile.role != 'Cashier':
+    if not request.user.is_authenticated:
+        messages.error(request, 'Please log in to access this page.')
+        return redirect('login_view')
+    if hasattr(request.user, 'staff_profile') and request.user.staff_profile.role != 'Cashier':
         messages.error(request, 'You are not authorized to access this page.')
         return redirect('login_view')
     recipes = Recipe.objects.all()
-    return render(request,'user_auth/cashier_dashboard.html',{'recipes':recipes})
+    return render(request, 'user_auth/cashier_dashboard.html', {'recipes': recipes})
 
 def chef_dashboard(request):
     return render(request,'user_auth/chef_dashboard.html')

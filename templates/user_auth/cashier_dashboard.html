@@ -91,7 +91,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 min-h-screen transition-colors duration-200">
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen dark:bg-gray-900 dark:text-gray-200 min-h-screen transition-colors duration-200">
     <!-- Top Navigation Bar -->
     <header class="bg-white dark:bg-gray-800 shadow-md">
         <div class="flex justify-between items-center h-16 px-8">
@@ -108,75 +108,16 @@
                     </svg>
                 </button>
                 <div class="relative">
-                    <button class="flex items-center space-x-2">
+                    <a href="{%url 'userLogin'%}"><button class="flex items-center space-x-2">
                         <div class="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center text-white font-semibold">C</div>
-                        <span>Cashier User</span>
-                    </button>
+                        <span>Login</span>
+                    </button></a>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="p-8">
-        <!-- Dashboard Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-gray-600 dark:text-gray-400">Today's Orders</p>
-                        <h3 class="text-2xl font-bold">24</h3>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <div class="极速快3flex items-center">
-                    <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke极速快3="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-极速快31.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m极速快3 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-gray-600 dark:text-gray-400">Today's Revenue</p>
-                        <h3 class="text-2xl font-bold">$1,248</h3>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300">
-                        <svg xmlns="http://www.w3.org/2000/s极速快3vg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-gray-600 dark:text-gray-400">Pending Orders</p>
-                        <h3 class="text-2xl font-bold">5</h3>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <div class="flex items-center">
-                    <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2极速快3v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-gray-600 dark:text-gray-400">Available Recipes</p>
-                        <h3 class="text-2xl font-bold">18/24</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
+    <main class="p-8 flex-grow">        
         <!-- Action Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
@@ -202,7 +143,7 @@
                     <h4 class="text-lg font-semibold ml-4">Manage Recipes</h4>
                 </div>
                 <p class="text-gray-600 dark:text-gray-400 mb-4">Control which recipes are available on the menu</p>
-                <button onclick="toggleRecipeSection()" class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md transition-colors">Manage Availability</button>
+                <button id="toggleAvailability" onclick="toggleRecipeSection()" class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md transition-colors">Manage Availability</button>
             </div>
             
             <div class="dashboard-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
@@ -215,92 +156,33 @@
                     <h4 class="text-lg font-semibold ml-4">View Menu</h4>
                 </div>
                 <p class="text-gray-600 dark:text-gray-400 mb-4">Go to the customer menu to take orders</p>
-                <button onclick="goToMenu()" class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md transition-colors">Go to Menu</button>
+                <a href="{%url 'menu'%}"><button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md transition-colors">Go to Menu</button></a>
             </div>
         </div>
-        
-        <!-- Recipe Management Section -->
-        <div id="recipeSection" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 hidden">
-            <h2 class="text-2xl font-bold mb-6">Recipe Availability</h2>
-            <p class="text-gray-600 dark:text-gray-400 mb-6">Toggle availability of recipes on the menu. Only available recipes will be displayed to customers.</p>
-            
-            <div class="mb-4">
-                <input type="text" id="recipeSearch" placeholder="Search recipes..." class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
-            </div>
-            
-            <div class="divide-y divide-gray-200 dark:divide-gray-700 max-h-96 overflow-y-auto">
-                <!-- Recipe items will be populated here -->
-            </div>
-        </div>
-        
-        <!-- Recent Orders -->
-        <!-- <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h2 class="text-2xl font-bold mb-6">Recent Orders</h2>
-            
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:极速快3divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-gray-700">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Order ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Customer</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Items</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">#ORD-2023-0876</td>
-                            <td class="px-6 py-4 whitespace-nowrap">John Smith</td>
-                            <td class="px-6 py-4 whitespace-nowrap">2 x Grilled Salmon, 1 x Pasta</td>
-                            <td class="px-6 py-4 whitespace-nowrap">$52.48</td>
-                            <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Completed</span></td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">#ORD-2023-0875</td>
-                            <td class="px-6 py-4 whitespace-nowrap">Emma Johnson</td>
-                            <td class="px-6 py-4 whitespace-nowrap">1 x Beef Burger, 2 x Lemonade</td>
-                            <td class="px-6 py-4 whitespace-nowrap">$24.50</td>
-                            <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">Preparing</span></td>
-                        </tr>
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">#ORD-2023-0874</td>
-                            <td class="px-6 py-4 whitespace-nowrap">Michael Brown</td>
-                            <td class="px-6 py-4 whitespace-nowrap">3 x Chicken Salad, 1 x Cake</td>
-                            <td class="px-6 py-4 whitespace-nowrap">$38.97</td>
-                            <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 dark:极速快3bg-blue-900 text-blue-800 dark:text-blue-200">Served</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div> -->
+
+                <!-- Recipe Availability Section (Hidden by Default) -->
+                <div id="availabilitySection" class="mt-8 hidden">
+                    <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300">Manage Recipe Availability</h3>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Toggle recipes to show or hide them on the menu</p>
+                    <form class="mt-4 space-y-4" id="availabilityForm" method="POST" action="{% url 'manageAvailability' %}">
+                        {% csrf_token %}
+                        <div class="rounded-md shadow-sm space-y-2" id="recipeList">
+                            <!-- Recipes will be populated by JavaScript -->
+                        </div>
+                        <div>
+                            <button type="submit" class="btn-update group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                Update Availability
+                            </button>
+                        </div>
+                    </form>
+                </div>
     </main>
-
-    <!-- Password Modal -->
-    <div id="passwordModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center hidden z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-            <h3 class="text-xl font-semibold mb-4">Change Password</h3>
-            <form>
-                <div class极速快3="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Password</label>
-                    <input type="password" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
-                    <input type="password" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                </div>
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm New Password</label>
-                    <input type="password" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closePasswordModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
-                    <a href="{% url 'changePassword'%}"><button type="button" class="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600">Update Password</button></a>
-                </div>
-            </form>
+    
+        <footer class="bg-white dark:bg-gray-800 shadow-md mt-8 py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600 dark:text-gray-400">
+        <p>&copy; Misosi Pluss++. All rights reserved.</p>
         </div>
-    </div>
-
+        </footer>
     <script>
         // Function to toggle between light and dark mode
         function toggleTheme() {
@@ -320,74 +202,6 @@
             // Load recipe data
             loadRecipes();
         });
-
-        // Sample recipe data
-        const recipes = [
-            { id: 1, name: "Grilled Salmon", category: "Main Course", available: true },
-            { id: 2, name: "Beef Burger", category: "Main Course", available: true },
-            { id: 3, name: "Vegetable Pasta", category: "Main Course", available: false },
-            { id: 4, name: "Chicken Salad", category: "Appetizer", available: true },
-            { id: 5, name: "French Fries", category: "Side Dish", available: true },
-            { id: 6, name: "Chocolate Cake", category: "Dessert", available: true },
-            { id: 7, name: "Lemonade", category: "Beverage", available: true },
-            { id: 8, name: "Tiramisu", category: "Dessert", available: false },
-            { id: 9, name: "Garlic Bread", category: "Appetizer", available: true },
-            { id: 10, name: "Fish and Chips", category: "Main Course", available: true }
-        ];
-
-        // Load recipes into the management section
-        function loadRecipes() {
-            const recipeContainer = document.querySelector('#recipeSection .divide-y');
-            recipeContainer.innerHTML = '';
-            
-            // Group recipes by category
-            const categories = {};
-            recipes.forEach(recipe => {
-                if (!categories[recipe.category]) {
-                    categories[recipe.category] = [];
-                }
-                categories[recipe.category].push(recipe);
-            });
-            
-            // Create category sections
-            for (const category in categories) {
-                // Category header
-                const categoryHeader = document.createElement('div');
-                categoryHeader.className = 'py-3';
-                categoryHeader.innerHTML = `<h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">${category}</h3>`;
-                recipeContainer.appendChild(categoryHeader);
-                
-                // Category recipes
-                categories[category].forEach(recipe => {
-                    const recipeItem = document.createElement('极速快3div');
-                    recipeItem.className = 'recipe-item py-3 flex items-center justify-between';
-                    recipeItem.innerHTML = `
-                        <div>
-                            <h4 class="font-medium">${recipe.name}</h4>
-                        </div>
-                        <label class="availability-toggle">
-                            <input type="checkbox" ${recipe.available ? 'checked' : ''} onchange="toggleAvailability(${recipe.id})">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    `;
-                    recipeContainer.appendChild(recipeItem);
-                });
-            }
-            
-            // Add search functionality
-            document.getElementById('recipeSearch').addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                document.querySelectorAll('.recipe-item').forEach(item => {
-                    const recipeName = item.querySelector('h4').textContent.toLowerCase();
-                    if (recipeName.includes(searchTerm)) {
-                        item.style.display = 'flex';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            });
-        }
-
         // Toggle recipe availability
         function toggleAvailability(recipeId) {
             const recipe = recipes.find(r => r.id === recipeId);
@@ -398,34 +212,63 @@
             }
         }
 
-        // Toggle recipe section visibility
-        function toggleRecipeSection() {
-            const recipeSection = document.getElementById('recipeSection');
-            recipeSection.classList.toggle('hidden');
+     // Toggle recipe list visibility
+        function toggleRecipeList() {
+            const section = document.getElementById('availabilitySection');
+            const button = document.getElementById('toggleAvailability');
+            const isHidden = section.classList.contains('hidden');
+            if (isHidden) {
+                section.classList.remove('hidden');
+                button.textContent = 'Hide Availability';
+            } else {
+                section.classList.add('hidden');
+                button.textContent = 'Manage Availability';
+            }
         }
 
-        // Open password modal
-        function openPasswordModal() {
-            document.getElementById('passwordModal').classList.remove('hidden');
-        }
+        // Populate recipes from database
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            document.getElementById('toggleAvailability').addEventListener('click', toggleRecipeList);
 
-        // Close password modal
-        function closePasswordModal() {
-            document.getElementById('passwordModal').classList.add('hidden');
-        }
+            // Fetch recipes from Django context
+            const recipes = [
+                {% for recipe in recipes %}
+                    {
+                        id: {{ recipe.id }},
+                        name: "{{ recipe.name|escapejs }}",
+                        is_available: {{ recipe.is_available|yesno:"true,false" }}
+                    }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
 
-        // Update password
-        function updatePassword() {
-            // In a real application, you would validate and send the new password to the server
-            alert('Password updated successfully!');
-            closePasswordModal();
-        }
+            const recipeList = document.getElementById('recipeList');
+            recipeList.innerHTML = ''; // Clear placeholder
 
-        // Go to menu page
-        function goToMenu() {
-            // In a real application, this would redirect to the menu page
-            alert('Redirecting to menu page...');
-        }
+            if (recipes.length === 0) {
+                recipeList.innerHTML = '<p class="text-center text-gray-500 dark:text-gray-400">No recipes available.</p>';
+            } else {
+                recipes.forEach(recipe => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center justify-between py-2';
+                    div.innerHTML = `
+                        <label class="flex items-center space-x-3">
+                            <input type="checkbox" name="recipe_ids[]" value="${recipe.id}" 
+                                   ${recipe.is_available ? 'checked' : ''} 
+                                   class="h-5 w-5 text-primary-500 focus:ring-primary-500 border-gray-300 dark:border-gray-600 rounded">
+                            <span class="text-sm text-gray-700 dark:text-gray-300 ">${recipe.name}</span>
+                        </label>
+                    `;
+                    recipeList.appendChild(div);
+                });
+            }
+        });
+
     </script>
 </body>
 </html>

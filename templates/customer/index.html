@@ -1,83 +1,10 @@
-
-<!-- Customer Page -->
-                <!-- <div id="customerPage" class="page active-page">
-                    <h2 class="text-2xl font-bold mb-6">Today Available Menu</h2> -->
-                    
-                    <!-- Menu Filters -->
-                    <!-- <div class="flex flex-wrap gap-4 mb-6">
-                        <button class="bg-primary-500 text-white px-4 py-2 rounded-md">All Items</button>
-                        <button class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Recipes</button>
-                        <button class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Drinks</button>
-                    </div> -->
-                    
-                    <!-- Menu Grid -->
-                    <!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"> -->
-                        <!-- Menu Items -->
-                        <!-- <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                            <div class="p-4">
-                                <div class="flex justify-between items-start">
-                                    <h3 class="text-lg font-semibold">Grilled Salmon</h3>
-                                    <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">Available</span>
-                                </div>
-                                <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Fresh salmon with herbs and lemon butter sauce</p>
-                                <div class="flex justify-between items-center mt-4">
-                                    <span class="text-primary-600 dark:text-primary-400 font-bold">$18.99</span>
-                                    <button class="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-md text-sm">Add to Order</button>
-                                </div>
-                            </div>
-                        </div> -->
-                        
-                        <!-- More menu items would go here -->
-                    <!-- </div> -->
-                    
-                    <!-- Order Summary -->
-                    <!-- <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
-                        <h3 class="text-xl font-semibold mb-4">Current Order</h3>
-                        <div class="border-b dark:border-gray-700 pb-4 mb-4">
-                            <div class="flex justify-between mb-2">
-                                <span>2 x Grilled Salmon</span>
-                                <span>$37.98</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span>1 x Beef Burger</span>
-                                <span>$14.50</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between font-bold text-lg">
-                            <span>Total</span>
-                            <span>$52.48</span>
-                        </div>
-                        <div class="mt-6 flex justify-end space-x-4">
-                            <button class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Clear Order</button>
-                            <button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Process Payment</button>
-                        </div>
-                    </div>
-                </div> -->
-
-                <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Misosi Pluss++</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-        // Function to toggle between light and dark mode
-        function toggleTheme() {
-            const html = document.documentElement;
-            html.classList.toggle('dark');
-            const isDark = html.classList.contains('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        }
-
-        // Check for saved theme preference or respect OS preference
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            }
-        });
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -132,303 +59,47 @@
         <div id="customerView">
             <h2 class="text-2xl font-bold mb-6">Today's Menu</h2>
             
+            <!-- Messages -->
+            {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                        <div class="p-2 rounded-md text-center text-sm {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
             <!-- Menu Filters -->
-            <div class="flex flex-wrap gap-4 mb-6">
-                <button class="bg-primary-500 text-white px-4 py-2 rounded-md">All Items</button>
-                <button class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Main Course</button>
-                <button class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Drinks</button>
+           <div class="flex flex-wrap gap-4 mb-6">
+                <button id="allItems" class="bg-primary-500 text-white px-4 py-2 rounded-md">All Items</button>
+                <button id="mainCourse" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Main Course</button>
+                <button id="drinks" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Drinks</button>
             </div>
-            
             <!-- Menu Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <!-- Menu Item 1 -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                    <div class="p-4">
-                        <div class="flex justify-between items-start">
-                            <h3 class="text-lg font-semibold">Grilled Salmon</h3>
-                            <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">Available</span>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Fresh salmon with herbs and lemon butter sauce</p>
-                        <div class="flex justify-between items-center mt-4">
-                            <span class="text-primary-600 dark:text-primary-400 font-bold">$18.99</span>
-                            <button class="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-md text-sm">Add to Order</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Menu Item 2 -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                    <div class="p-4">
-                        <div class="flex justify-between items-start">
-                            <h3 class="text-lg font-semibold">Beef Burger</h3>
-                            <span class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs px-2 py-1 rounded-full">Available</span>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Angus beef with cheese, lettuce and special sauce</p>
-                        <div class="flex justify-between items-center mt-4">
-                            <span class="text-primary-600 dark:text-primary-400 font-bold">$14.50</span>
-                            <button class="bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-md text-sm">Add to Order</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Menu Item 3 -->
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-                    <div class="p-4">
-                        <div class="flex justify-between items-start">
-                            <h3 class="text-lg font-semibold">Vegetable Pasta</h3>
-                            <span class="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 text-xs px-2 py-1 rounded-full">Unavailable</span>
-                        </div>
-                        <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">Fresh pasta with seasonal vegetables and pesto</p>
-                        <div class="flex justify-between items-center mt-4">
-                            <span class="text-primary-600 dark:text-primary-400 font-bold">$12.99</span>
-                            <button class="bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-3 py-1 rounded-md text-sm cursor-not-allowed">Out of Stock</button>
-                        </div>
-                    </div>
-                </div>
+            <div id="menuGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Recipes will be populated by JavaScript -->
             </div>
             
             <!-- Order Summary -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
                 <h3 class="text-xl font-semibold mb-4">Current Order</h3>
-                <div class="border-b dark:border-gray-700 pb-4 mb-4">
-                    <div class="flex justify-between mb-2">
-                        <span>2 x Grilled Salmon</span>
-                        <span>$37.98</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>1 x Beef Burger</span>
-                        <span>$14.50</span>
-                    </div>
+                <div id="orderItems" class="border-b dark:border-gray-700 pb-4 mb-4">
+                    <!-- Order items will be populated by JavaScript -->
                 </div>
                 <div class="flex justify-between font-bold text-lg">
                     <span>Total</span>
-                    <span>$52.48</span>
+                    <span id="orderTotal">0.00(Tsh)</span>
                 </div>
-                <div class="mt-6 flex justify-end space-x-4">
-                    <button class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Clear Order</button>
-                    <button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Process Payment</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Admin Dashboard (Hidden by default) -->
-        <div id="adminDashboard" class="hidden">
-            <h2 class="text-2xl font-bold mb-6">Admin Dashboard</h2>
-            
-            <!-- Dashboard Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-gray-600 dark:text-gray-400">Total Staff</p>
-                            <h3 class="text-2xl font-bold">12</h3>
-                        </div>
+                <form id="orderForm" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" id="formAction">
+                    <input type="hidden" name="order_items[]" id="orderItemsInput" multiple>
+                    <div class="mt-6 flex justify-end space-x-4">
+                        <button type="button" id="clearOrder" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-md">Clear Order</button>
+                        <button type="submit" id="confirmOrder" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Confirm Order</button>
                     </div>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-gray-600 dark:text-gray-400">Today's Revenue</p>
-                            <h3 class="text-2xl font-bold">$2,458</h3>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-gray-600 dark:text-gray-400">Pending Orders</p>
-                            <h3 class="text-2xl font-bold">8</h3>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center">
-                        <div class="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-gray-600 dark:text-gray-400">Low Stock Items</p>
-                            <h3 class="text-2xl font-bold">5</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Admin Actions -->
-            <h3 class="text-xl font-semibold mb-4">Management Actions</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-lg font-semibold ml-4">Register Staff</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">Add new cashiers or chefs to the system</p>
-                    <button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Manage Staff</button>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A1.5 1.5 0 013 15.546V5a1 1 0 011-1h16a1 1 0 011 1v10.546z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-lg font-semibold ml-4">Register Recipe</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">Add new recipes to the menu with ingredients</p>
-                    <button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Add Recipe</button>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-lg font-semibold ml-4">View Reports</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">Generate sales and performance reports</p>
-                    <button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Generate Reports</button>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-lg font-semibold ml-4">See Progress</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">View visual graphs of restaurant performance</p>
-                    <button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">View Analytics</button>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                            </svg>
-                        </div>
-                        <h4 class="text-lg font-semibold ml-4">Inventory</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">Manage inventory and stock levels</p>
-                    <button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Go to Inventory</button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Inventory Admin Dashboard (Hidden by default) -->
-        <div id="inventoryDashboard" class="hidden">
-            <h2 class="text-2xl font-bold mb-6">Inventory Management</h2>
-            
-            <!-- Inventory Actions -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                        </div>
-                        <h4 class="text-lg font-semibold ml-4">Add Product</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">Register new inventory products</p>
-                    <button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Add New Product</button>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-lg font-semibold ml-4">Expiration Priority</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">View products by expiration date</p>
-                    <button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">View Products</button>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                        </div>
-                        <h4 class="text-lg font-semibold ml-4">Inventory Reports</h4>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">Generate inventory usage reports</p>
-                    <button class="w-full bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Generate Reports</button>
-                </div>
-            </div>
-            
-            <!-- Inventory Table -->
-            <h3 class="text-xl font-semibold mb-4">Current Inventory</h3>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mb-8">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-gray-700">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Batch No</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Expiration Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Quantity</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">Tomato Sauce</td>
-                                <td class="px-6 py-4 whitespace-nowrap">TS-2023-0876</td>
-                                <td class="px-6 py-4 whitespace-nowrap">2023-12-15</td>
-                                <td class="px-6 py-4 whitespace-nowrap">24 units</td>
-                                <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">Good</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">Chicken Breast</td>
-                                <td class="px-6 py-4 whitespace-nowrap">CB-2023-1023</td>
-                                <td class="px-6 py-4 whitespace-nowrap">2023-10-28</td>
-                                <td class="px-6 py-4 whitespace-nowrap">15 kg</td>
-                                <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">Warning</span></td>
-                            </tr>
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">Lettuce</td>
-                                <td class="px-6 py-4 whitespace-nowrap">LT-2023-1105</td>
-                                <td class="px-6 py-4 whitespace-nowrap">2023-11-05</td>
-                                <td class="px-6 py-4 whitespace-nowrap">8 kg</td>
-                                <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200">Urgent</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                </form>
             </div>
         </div>
     </main>
@@ -438,5 +109,200 @@
     <p>&copy; Misosi Pluss++. All rights reserved.</p>
         </div>
     </footer>
+
+        <script>
+        // Toggle theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Check for saved theme preference or respect OS preference
+                document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        });
+
+        // Order management
+        let orders = []; // Store orders: [{id, name, price, quantity}, ...]
+
+        function updateOrderDisplay() {
+            const orderItemsDiv = document.getElementById('orderItems');
+            orderItemsDiv.innerHTML = orders.length === 0 
+                ? '<p class="text-gray-600 dark:text-gray-400">No items in order.</p>'
+                : '';
+            
+            let total = 0;
+            orders.forEach(order => {
+                const itemTotal = order.price * order.quantity;
+                total += itemTotal;
+                const div = document.createElement('div');
+                div.className = 'flex justify-between mb-2';
+                div.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span>${order.quantity} x ${order.name}</span>
+                        <input type="number" min="1" value="${order.quantity}" 
+                               data-id="${order.id}" class="quantity-input w-16 p-1 border rounded dark:border-gray-600 dark:bg-gray-700" />
+                    </div>
+                    <span>${itemTotal.toFixed(2)}(Tsh)</span>
+                `;
+                orderItemsDiv.appendChild(div);
+            });
+
+            document.getElementById('orderTotal').textContent = `${total.toFixed(2)}(Tsh)`;
+            
+            // Update hidden input for form submission
+            const orderItemsInput = document.getElementById('orderItemsInput');
+            orderItemsInput.value = orders.map(o => `${o.id}:${o.quantity}`).join(',');
+        }
+
+        // Populate menu
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+            // Recipes from Django
+            const recipes = [
+                {% for recipe in recipes %}
+                    {
+                        id: {{ recipe.id }},
+                        name: "{{ recipe.name|escapejs }}",
+                        description: "{{ recipe.description|escapejs }}",
+                        category: "{{ recipe.category|escapejs }}",
+                        price: {{ recipe.price|floatformat:2 }},
+                        image: "{{ recipe.image.url|escapejs }}"
+                    }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            const menuGrid = document.getElementById('menuGrid');
+            const allItemsBtn = document.getElementById('allItems');
+            const mainCourseBtn = document.getElementById('mainCourse');
+            const drinksBtn = document.getElementById('drinks');
+
+            function displayRecipes(filter = 'all') {
+                menuGrid.innerHTML = '';
+                const filteredRecipes = filter === 'all' 
+                    ? recipes 
+                    : recipes.filter(r => r.category === (filter === 'main' ? 'Main Course' : 'Beverage'));
+                
+                if (filteredRecipes.length === 0) {
+                    menuGrid.innerHTML = '<p class="text-gray-600 dark:text-gray-400 col-span-full text-center">No items available.</p>';
+                    return;
+                }
+
+                filteredRecipes.forEach(recipe => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden';
+                    div.innerHTML = `
+                        <img src="${recipe.image}" alt="${recipe.name}" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <div class="flex justify-between items-start">
+                                <h3 class="text-lg font-semibold">${recipe.name}</h3>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">${recipe.description || 'No description available'}</p>
+                            <div class="flex justify-between items-center mt-4">
+                                <span class="text-primary-600 dark:text-primary-400 font-bold">${recipe.price.toFixed(2)}(Tsh)</span>
+                                <button data-id="${recipe.id}" class="add-to-order bg-primary-500 hover:bg-primary-600 text-white px-3 py-1 rounded-md text-sm">Add to Order</button>
+                            </div>
+                        </div>
+                    `;
+                    menuGrid.appendChild(div);
+                });
+            }
+
+            // Filter button handlers
+            allItemsBtn.addEventListener('click', () => {
+                allItemsBtn.classList.add('bg-primary-500', 'text-white');
+                allItemsBtn.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+                mainCourseBtn.classList.remove('bg-primary-500', 'text-white');
+                mainCourseBtn.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                drinksBtn.classList.remove('bg-primary-500', 'text-white');
+                drinksBtn.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                displayRecipes('all');
+            });
+
+            mainCourseBtn.addEventListener('click', () => {
+                mainCourseBtn.classList.add('bg-primary-500', 'text-white');
+                mainCourseBtn.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+                allItemsBtn.classList.remove('bg-primary-500', 'text-white');
+                allItemsBtn.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                drinksBtn.classList.remove('bg-primary-500', 'text-white');
+                drinksBtn.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                displayRecipes('main');
+            });
+
+            drinksBtn.addEventListener('click', () => {
+                drinksBtn.classList.add('bg-primary-500', 'text-white');
+                drinksBtn.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+                allItemsBtn.classList.remove('bg-primary-500', 'text-white');
+                allItemsBtn.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                mainCourseBtn.classList.remove('bg-primary-500', 'text-white');
+                mainCourseBtn.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                displayRecipes('drinks');
+            });
+
+            // Add to order
+            menuGrid.addEventListener('click', (e) => {
+                if (e.target.classList.contains('add-to-order')) {
+                    const recipeId = e.target.getAttribute('data-id');
+                    const recipe = recipes.find(r => r.id == recipeId);
+                    if (!recipe) return;
+                    
+                    const existingOrder = orders.find(o => o.id == recipeId);
+                    if (existingOrder) {
+                        existingOrder.quantity += 1;
+                    } else {
+                        orders.push({
+                            id: recipe.id,
+                            name: recipe.name,
+                            price: recipe.price,
+                            quantity: 1
+                        });
+                    }
+                    updateOrderDisplay();
+                }
+            });
+
+            // Update quantity
+            document.getElementById('orderItems').addEventListener('change', (e) => {
+                if (e.target.classList.contains('quantity-input')) {
+                    const recipeId = e.target.getAttribute('data-id');
+                    const newQuantity = parseInt(e.target.value);
+                    if (newQuantity < 1) {
+                        orders = orders.filter(o => o.id != recipeId);
+                    } else {
+                        const order = orders.find(o => o.id == recipeId);
+                        if (order) order.quantity = newQuantity;
+                    }
+                    updateOrderDisplay();
+                }
+            });
+
+            // Clear order
+            document.getElementById('clearOrder').addEventListener('click', () => {
+                orders = [];
+                updateOrderDisplay();
+            });
+
+            // Confirm order
+            document.getElementById('confirmOrder').addEventListener('click', () => {
+                document.getElementById('formAction').value = 'confirm_order';
+                document.getElementById('orderItemsInput').value = orders.map(o => `${o.id}:${o.quantity}`).join(',');
+            });
+
+            // Initial display
+            allItemsBtn.classList.add('bg-primary-500', 'text-white');
+            displayRecipes('all');
+        });
+    </script>
 </body>
 </html>
