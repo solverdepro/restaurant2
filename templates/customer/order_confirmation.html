@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - Misosi Pluss++</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#fef7ee',
+                            100: '#fdecd6',
+                            200: '#f9d5ad',
+                            300: '#f3b679',
+                            400: '#ec8e43',
+                            500: '#e8731e',
+                            600: '#d95a14',
+                            700: '#b44413',
+                            800: '#913717',
+                            900: '#752e16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-200">
+    <!-- Navigation Bar -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-primary-600 dark:text-primary-400">Misosi Pluss++</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 01-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                        </svg>
+                    </button>
+                    <a href="{% url 'userLogin' %}"><button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Login</button></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold mb-6">Order Confirmation</h2>
+        
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-2 rounded-md text-center text-sm {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Order Details -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+            <h3 class="text-xl font-semibold mb-4">Order Details</h3>
+            <p><strong>Date:</strong> {{ order_details.date }}</p>
+            <p><strong>Cashier:</strong> {{ order_details.cashier }}</p>
+            <div class="border-b dark:border-gray-700 pb-4 mb-4">
+                <h4 class="text-lg font-medium mb-2">Ordered Items</h4>
+                {% for item in order_details.items %}
+                    <div class="flex justify-between mb-2">
+                        <span>{{ item.quantity }} x {{ item.name }}</span>
+                        <span>{{ item.item_total|floatformat:2 }} Tsh</span>
+                    </div>
+                {% empty %}
+                    <p class="text-gray-600 dark:text-gray-400">No items in order.</p>
+                {% endfor %}
+            </div>
+            <div class="flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span>{{ order_details.total|floatformat:2 }} Tsh</span>
+            </div>
+            <form method="POST" class="mt-6 flex justify-end">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="download_pdf">
+                <button type="submit" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Download Receipt as PDF</button>
+            </form>
+        </div>
+        <a href="{% url 'menu' %}" class="text-primary-500 hover:text-primary-600">Back to Menu</a>
+    </main>
+
+    <footer class="bg-white dark:bg-gray-800 shadow-md mt-8 py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600 dark:text-gray-400">
+            <p>&copy; 2025 Misosi Pluss++. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Toggle theme
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+            
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        });
+    </script>
+</body>
+</html>

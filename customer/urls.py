@@ -6,4 +6,5 @@ urlpatterns = [
     path('admin_dashboard/',views.admin_dashboard, name='admindashboard'),
     path('add_recipe/',views.register_recipe, name='addrecipe'),
     path('menu/',views.menu_view,name='menu'),
+    path('order_confirmation/', views.order_confirmation, name='orderConfirmation'),
 ]
