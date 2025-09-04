@@ -58,17 +58,20 @@
         <!-- Customer View (Default View) -->
         <div id="customerView">
             <h2 class="text-2xl font-bold mb-6">Today's Menu</h2>
-            
-            <!-- Messages -->
-            {% if messages %}
-                <div class="mb-6">
-                    {% for message in messages %}
-                        <div class="p-2 rounded-md text-center text-sm {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+     {% if messages %}
+         <div id="messages" class="mb-6">
+        {% for message in messages %}
+            <div class="p-2 rounded-md text-center text-sm 
+                   {% if message.tags == 'error' %}
+                      bg-red-100 text-red-700
+                    {% else %}
+                     bg-green-100 text-green-700
+                    {% endif %}">
+                    {{ message }}
+              </div>
+              {% endfor %}
+          </div>
+     {% endif %}
 
             <!-- Menu Filters -->
            <div class="flex flex-wrap gap-4 mb-6">
@@ -156,8 +159,19 @@
             document.getElementById('orderTotal').textContent = `${total.toFixed(2)}(Tsh)`;
             
             // Update hidden input for form submission
-            const orderItemsInput = document.getElementById('orderItemsInput');
-            orderItemsInput.value = orders.map(o => `${o.id}:${o.quantity}`).join(',');
+            // const orderItemsInput = document.getElementById('orderItemsInput');
+            // orderItemsInput.value = orders.map(o => `${o.id}:${o.quantity}`).join(',');
+            // Remove previous hidden inputs
+            document.querySelectorAll('input[name="order_items[]"]').forEach(e => e.remove());
+
+                    // Add a hidden input for each order
+                    orders.forEach(o => {
+                        const input = document.createElement('input');
+                                input.type = 'hidden';
+                                input.name = 'order_items[]';
+                                input.value = `${o.id}:${o.quantity}`;
+                                document.getElementById('orderForm').appendChild(input);
+                            });
         }
 
         // Populate menu
@@ -303,6 +317,18 @@
             allItemsBtn.classList.add('bg-primary-500', 'text-white');
             displayRecipes('all');
         });
+
+            // Auto dismiss Django messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', () => {
+        const messages = document.getElementById('messages');
+        if (messages) {
+            setTimeout(() => {
+                messages.style.transition = "opacity 0.5s ease";
+                messages.style.opacity = "0";
+                setTimeout(() => messages.remove(), 500); // Remove from DOM after fade out
+            }, 5000); // 5 seconds
+        }
+    });
     </script>
 </body>
 </html>
