@@ -93,19 +93,12 @@
                                            {% endif %}
                                        </td>
                                        <td class="flex space-x-2">
-                                           <!-- Update Button -->
-                                           <a href="{% url 'update_product' batch.id %}" 
-                                              class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm">
-                                               Update
-                                           </a>
-                                       
-                                           <!-- Delete Button -->
-                                           <form action="{% url 'delete_product' batch.id %}" method="post" onsubmit="return confirm('Are you sure?');">
-                                               {% csrf_token %}
-                                               <button type="submit" 
-                                                       class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm">
-                                                   Delete
-                                               </button>
+                                        <a href="{% url 'update_product' batch.id %}"><button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button></a>
+                                        <form action="{% url 'delete_product' batch.id %}" method="post" onsubmit="return confirm('Are you sure?');">
+                                            {% csrf_token %}
+                                        <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
+                                        </form>
+
                                            </form>
                                        </td>
                                    </tr>
