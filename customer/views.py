@@ -1,17 +1,15 @@
 from django.shortcuts import render, redirect,HttpResponse
 from .models import Recipe, Product,RecipeIngredient
-from django.core.exceptions import ValidationError
 from decimal import Decimal
 from datetime import datetime
 from django.contrib import messages
 import logging
 from django.contrib.auth.decorators import login_required
-
+from django.db.models import Sum
+from django.utils import timezone
+from inventory.models import ProductBatch
 
 logger = logging.getLogger(__name__)
-# def home(request):
-#     return render(request,'customer/index.html')
-
 def admin_dashboard(request):
     return render(request,'customer/admin_dashboard.html')
 
@@ -83,6 +81,72 @@ def register_recipe(request):
         
     return render(request, 'customer/add_recipe.html', {'products': products})
 
+# def menu_view(request):
+#     recipes = Recipe.objects.filter(is_available=True)
+#     logger.debug(f"Recipes fetched for menu: {list(recipes.values('id', 'name', 'category', 'is_available', 'price', 'description', 'image'))}")
+    
+#     if request.method == 'POST':
+#         logger.debug(f"POST data: {request.POST}")
+#         action = request.POST.get('action')
+        
+#         if action == 'confirm_order':
+#             order_items = request.POST.getlist('order_items[]')  # Format: recipe_id:quantity
+#             try:
+#                 #Validate and update inventory
+#                 order_details = []
+#                 total = 0
+#                 for item in order_items:
+#                     recipe_id, quantity = item.split(':')
+#                     quantity = int(quantity)
+#                     if quantity <= 0:
+#                         continue
+                    
+#                     recipe = Recipe.objects.get(id=recipe_id)
+#                     recipe_ingredients = RecipeIngredient.objects.filter(recipe=recipe)
+                    
+#                     # Check and update ingredient quantities
+#                     for ri in recipe_ingredients:
+#                         product = ri.product
+#                         required_quantity = ri.quantity * quantity
+#                         if product.quantity < required_quantity:
+#                             messages.error(request, f"Insufficient stock for {product.name} to fulfill {recipe.name} order.")
+#                             return render(request, 'customer/index.html', {'recipes': Recipe.objects.filter(is_available=True)})
+                        
+#                         product.quantity -= required_quantity
+#                         product.save()
+#                                 # Store order details for confirmation page
+#                     item_total = recipe.price * quantity
+#                     total += item_total
+#                     order_details.append({
+#                         'recipe_id': recipe.id,
+#                         'name': recipe.name,
+#                         'quantity': quantity,
+#                         'item_total': float(item_total)
+#                     })
+                
+#                 # Store order details in session
+#                          # ✅ check authentication first
+#                     if not request.user.is_authenticated:
+#                              messages.error(request, "Failed To Confirm Because You Have Not Login")
+#                              return redirect("userLogin") 
+
+#                 request.session['order_details'] = {
+#                     'items': order_details,
+#                     'total': float(total),
+#                     'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+#                     'cashier': request.user.get_full_name() or request.user.username
+#                 }
+#                 messages.success(request, 'Order confirmed successfully..')
+#                 return redirect('orderConfirmation')        
+                
+#             except Exception as e:
+#                 logger.error(f"Error confirming order: {str(e)}")
+#                 messages.error(request, f'Failed to confirm order: {str(e)}')
+        
+#         return render(request, 'customer/index.html', {'recipes': Recipe.objects.filter(is_available=True)})
+    
+#     recipes = Recipe.objects.filter(is_available=True)
+#     return render(request, 'customer/index.html', {'recipes': recipes})
 def menu_view(request):
     recipes = Recipe.objects.filter(is_available=True)
     logger.debug(f"Recipes fetched for menu: {list(recipes.values('id', 'name', 'category', 'is_available', 'price', 'description', 'image'))}")
@@ -94,29 +158,47 @@ def menu_view(request):
         if action == 'confirm_order':
             order_items = request.POST.getlist('order_items[]')  # Format: recipe_id:quantity
             try:
-                #Validate and update inventory
                 order_details = []
                 total = 0
+
                 for item in order_items:
                     recipe_id, quantity = item.split(':')
                     quantity = int(quantity)
                     if quantity <= 0:
                         continue
-                    
+
                     recipe = Recipe.objects.get(id=recipe_id)
                     recipe_ingredients = RecipeIngredient.objects.filter(recipe=recipe)
-                    
-                    # Check and update ingredient quantities
+
                     for ri in recipe_ingredients:
                         product = ri.product
                         required_quantity = ri.quantity * quantity
-                        if product.quantity < required_quantity:
+
+                        # ✅ Get all non-expired batches for this product (FEFO order)
+                        batches = ProductBatch.objects.filter(
+                            product=product,
+                            expiration_date__gte=timezone.now().date(),
+                            quantity__gt=0
+                        ).order_by('expiration_date')
+
+                        # Deduct from batches in FEFO order
+                        for batch in batches:
+                            if required_quantity <= 0:
+                                break
+                            if batch.quantity >= required_quantity:
+                                batch.quantity -= required_quantity
+                                batch.save()
+                                required_quantity = 0
+                            else:
+                                required_quantity -= batch.quantity
+                                batch.quantity = 0
+                                batch.save()
+
+                        if required_quantity > 0:
                             messages.error(request, f"Insufficient stock for {product.name} to fulfill {recipe.name} order.")
                             return render(request, 'customer/index.html', {'recipes': Recipe.objects.filter(is_available=True)})
-                        
-                        product.quantity -= required_quantity
-                        product.save()
-                                # Store order details for confirmation page
+
+                    # Store order details
                     item_total = recipe.price * quantity
                     total += item_total
                     order_details.append({
@@ -125,12 +207,11 @@ def menu_view(request):
                         'quantity': quantity,
                         'item_total': float(item_total)
                     })
-                
-                # Store order details in session
-                         # ✅ check authentication first
-                    if not request.user.is_authenticated:
-                             messages.error(request, "Failed To Confirm Because You Have Not Login")
-                             return redirect("userLogin") 
+
+                # ✅ Require authentication before confirming
+                if not request.user.is_authenticated:
+                    messages.error(request, "Failed To Confirm Because You Have Not Login")
+                    return redirect("userLogin") 
 
                 request.session['order_details'] = {
                     'items': order_details,
@@ -140,15 +221,15 @@ def menu_view(request):
                 }
                 messages.success(request, 'Order confirmed successfully..')
                 return redirect('orderConfirmation')        
-                
+
             except Exception as e:
                 logger.error(f"Error confirming order: {str(e)}")
                 messages.error(request, f'Failed to confirm order: {str(e)}')
         
         return render(request, 'customer/index.html', {'recipes': Recipe.objects.filter(is_available=True)})
     
-    recipes = Recipe.objects.filter(is_available=True)
     return render(request, 'customer/index.html', {'recipes': recipes})
+
 @login_required
 def order_confirmation(request):
     order_details = request.session.get('order_details')
