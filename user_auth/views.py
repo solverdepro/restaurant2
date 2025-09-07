@@ -92,7 +92,7 @@ def register_staff(request):
         # Optionally log in the user (if desired)
         # login(request, user)
 
-        return redirect('homeview')  # Replace with your success URL
+        return redirect('home')  # Replace with your success URL
     return render(request,'user_auth/add_staff.html')
 
 
