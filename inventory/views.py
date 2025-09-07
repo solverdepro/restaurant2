@@ -79,3 +79,31 @@ def register_product(request):
 
     context = {'default_batch_number': generate_batch_number()}
     return render(request, 'inventory/add_product.html', context)
+
+def product_view(request):
+    batches = ProductBatch.objects.select_related("product", "supplier", "storage_location")
+    today = timezone.now().date()
+
+    for b in batches:
+        days_left = (b.expiration_date - today).days
+        if days_left < 0:
+            b.status = "expired"
+        elif days_left <= 14:
+            b.status = "expiring-soon"
+        elif b.quantity <= (b.product.minimum_stock_level or 0):
+            b.status = "low-stock"
+        else:
+            b.status = "in-stock"
+        b.days_left = days_left
+    return render(request,'inventory/product_view.html',{'batches': batches})
+
+def update_product(request, batch_id):
+    # logic to update product batch
+    pass
+
+def delete_product(request, batch_id):
+    batch = ProductBatch.objects.get(id=batch_id)
+    batch.delete()
+    messages.success(request, "Product batch deleted successfully!")
+    return redirect('productView')
+
