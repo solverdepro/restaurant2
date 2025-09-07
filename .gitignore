@@ -1,0 +1,30 @@
+# Python bytecode
+*.pyc
+__pycache__/
+
+# Environment variables
+.env
+*.env
+
+# Django stuff:
+db.sqlite3
+/staticfiles/
+media/
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
