@@ -1,0 +1,205 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Product Batch - Misosi Pluss++</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#fef7ee',
+                            100: '#fdecd6',
+                            200: '#f9d5ad',
+                            300: '#f3b679',
+                            400: '#ec8e43',
+                            500: '#e8731e',
+                            600: '#d95a14',
+                            700: '#b44413',
+                            800: '#913717',
+                            900: '#752e16',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-200">
+    <!-- Navigation Bar -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-xl font-bold text-primary-600 dark:text-primary-400">Misosi Pluss++</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 01-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                        </svg>
+                    </button>
+                    <a href="{% url 'productView' %}"><button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Back to Product View</button></a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold mb-6">Update Product Batch</h2>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-2 rounded-md text-center text-sm {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Form -->
+        <form method="POST" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Product Information -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Product Information</h3>
+                    <div class="mb-4">
+                        <label for="name" class="block text-sm font-medium">Product Name *</label>
+                        <input type="text" id="name" name="name" value="{{ batch.product.name }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="category" class="block text-sm font-medium">Category *</label>
+                        <select id="category" name="category" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                            {% for value, label in batch.product.CATEGORY_CHOICES %}
+                                <option value="{{ value }}" {% if value == batch.product.category %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="unit" class="block text-sm font-medium">Unit *</label>
+                        <select id="unit" name="unit" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                            {% for value, label in batch.product.UNIT_CHOICES %}
+                                <option value="{{ value }}" {% if value == batch.product.unit %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="minimum_stock_level" class="block text-sm font-medium">Minimum Stock Level</label>
+                        <input type="number" id="minimum_stock_level" name="minimum_stock_level" value="{{ batch.product.minimum_stock_level|default_if_none:'' }}" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+                </div>
+
+                <!-- Batch Information -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Batch Information</h3>
+                    <div class="mb-4">
+                        <label for="batchNumber" class="block text-sm font-medium">Batch Number *</label>
+                        <input type="text" id="batchNumber" name="batchNumber" value="{{ batch.batch_number }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="manufacturing_date" class="block text-sm font-medium">Manufacturing Date *</label>
+                        <input type="date" id="manufacturing_date" name="manufacturing_date" value="{{ batch.manufacturing_date|date:'Y-m-d' }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="expiration_date" class="block text-sm font-medium">Expiration Date *</label>
+                        <input type="date" id="expiration_date" name="expiration_date" value="{{ batch.expiration_date|date:'Y-m-d' }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="quantity" class="block text-sm font-medium">Quantity *</label>
+                        <input type="number" id="quantity" name="quantity" value="{{ batch.quantity }}" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="price" class="block text-sm font-medium">Price (Tsh) *</label>
+                        <input type="number" id="price" name="price" value="{{ batch.price }}" step="0.01" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="notes" class="block text-sm font-medium">Notes</label>
+                        <textarea id="notes" name="notes" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500">{{ batch.notes }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Supplier Information -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Supplier Information</h3>
+                    <div class="mb-4">
+                        <label for="supplier_name" class="block text-sm font-medium">Supplier Name</label>
+                        <input type="text" id="supplier_name" name="supplier_name" value="{{ batch.supplier.name|default_if_none:'' }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+                    <div class="mb-4">
+                        <label for="supplier_contact" class="block text-sm font-medium">Supplier Contact</label>
+                        <input type="text" id="supplier_contact" name="supplier_contact" value="{{ batch.supplier.contact_number|default_if_none:'' }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+                </div>
+
+                <!-- Storage Information -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Storage Information</h3>
+                    <div class="mb-4">
+                        <label for="storage_area" class="block text-sm font-medium">Storage Area</label>
+                        <select id="storage_area" name="storage_area" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                            <option value="">Select Area</option>
+                            {% for value, label in batch.storage_location.get_area_choices %}
+                                <option value="{{ value }}" {% if value == batch.storage_location.area %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="shelf_number" class="block text-sm font-medium">Shelf Number</label>
+                        <input type="text" id="shelf_number" name="shelf_number" value="{{ batch.storage_location.shelf_number|default_if_none:'' }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+                    <div class="mb-4">
+                        <label for="section" class="block text-sm font-medium">Section</label>
+                        <input type="text" id="section" name="section" value="{{ batch.storage_location.section|default_if_none:'' }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-4">
+                <a href="{% url 'productView' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">Cancel</a>
+                <button type="submit" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Update Product Batch</button>
+            </div>
+        </form>
+    </main>
+
+    <footer class="bg-white dark:bg-gray-800 shadow-md mt-8 py-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600 dark:text-gray-400">
+            <p>&copy; 2025 Misosi Pluss++. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const isDark = html.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        });
+    </script>
+</body>
+</html>

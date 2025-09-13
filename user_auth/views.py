@@ -3,12 +3,16 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login,logout,update_session_auth_hash
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.db import models
+from django.http import JsonResponse
+from django.urls import reverse
 from .models import Staff
 from customer.models import Recipe
 from django.contrib import messages
-import re
 import logging
-from django.contrib.auth.decorators import login_required
+import re
 
 
 # Create your views here.
@@ -88,9 +92,6 @@ def register_staff(request):
             return render(request, 'user_auth/add_staff.html', {
                 'error': str(e)
             })
-
-        # Optionally log in the user (if desired)
-        # login(request, user)
 
         return redirect('home')  # Replace with your success URL
     return render(request,'user_auth/add_staff.html')
@@ -192,7 +193,7 @@ def cashier_dashboard(request):
     # Check role
     if hasattr(request.user, 'staff_profile') and request.user.staff_profile.role != 'Cashier':
         messages.error(request, 'You are not authorized to access this page.')
-        return redirect('login_view')  # use your login route name
+        return redirect('login_view')  
     
     recipes = Recipe.objects.all()
     return render(request, 'user_auth/cashier_dashboard.html', {'recipes': recipes})
@@ -210,3 +211,102 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'You have been logged out.')
     return redirect('menu')
+
+
+@login_required
+def staff_view(request):
+    staffs = Staff.objects.select_related('user')
+    for staff in staffs:
+        staff.days_ago = (timezone.now().date() - staff.user.date_joined.date()).days
+
+    role_choices = Staff._meta.get_field('role').choices    
+    return render(request, 'user_auth/view_staff.html', {'staffs': staffs,'role_choices': role_choices})
+
+@login_required
+def search_staff(request):
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+    search_query = request.GET.get('search', '').strip()
+    role = request.GET.get('role', '')
+
+    staffs = Staff.objects.select_related('user')
+
+    if search_query:
+        staffs = staffs.filter(
+            models.Q(user__first_name__icontains=search_query) |
+            models.Q(user__last_name__icontains=search_query) |
+            models.Q(user__username__icontains=search_query)
+        )
+
+    if role:
+        staffs = staffs.filter(role=role)
+
+    data = []
+    for staff in staffs:
+        data.append({
+            'full_name': staff.user.get_full_name() or staff.user.username,
+            'initials': ''.join(word[0].upper() for word in (staff.user.get_full_name() or staff.user.username).split()[:2]),
+            'email': staff.user.email,
+            'username': staff.user.username,
+            'joining_date': staff.user.date_joined.date().strftime('%Y-%m-%d'),
+            'days_ago': (timezone.now().date() - staff.user.date_joined.date()).days,
+            'role': staff.role,
+            'phone_number': staff.phone_number,
+            'city': staff.city,
+            'edit_url': reverse('edit_staff', args=[staff.id]),
+            'delete_url': reverse('delete_staff', args=[staff.id])
+        })
+
+    return JsonResponse({'staff_members': data})
+
+
+@login_required
+def edit_staff(request, staff_id):
+    staff = Staff.objects.get(id=staff_id)
+    if request.method == 'POST':
+        try:
+            first_name = request.POST.get('first_name')
+            last_name = request.POST.get('last_name')
+            username = request.POST.get('username')
+            email = request.POST.get('email')
+            role = request.POST.get('role')
+            phone_number = request.POST.get('phone_number')
+            city = request.POST.get('city')
+
+            if not all([first_name, last_name, username, email, role]):
+                messages.error(request, "Please fill in all required fields.")
+                return render(request, 'user_auth/edit_staff.html', {'staff': staff})
+
+            staff.user.first_name = first_name
+            staff.user.last_name = last_name
+            staff.user.username = username
+            staff.user.email = email
+            staff.user.save()
+
+            staff.role = role
+            staff.phone_number = phone_number
+            staff.city = city
+            staff.save()
+
+            messages.success(request, "Staff member updated successfully!")
+            return redirect('staff_view')
+
+        except Exception as e:
+            logger.error(f"Error updating staff: {str(e)}")
+            messages.error(request, f"Error updating staff: {str(e)}")
+            return render(request, 'user_auth/edit_staff.html', {'staff': staff})
+
+    return render(request, 'user_auth/edit_staff.html', {
+        'staff': staff,
+        'role_choices': Staff.ROLE_CHOICES,
+    })
+
+@login_required
+def delete_staff(request, staff_id):
+    staff = Staff.objects.get(id=staff_id)
+    user = staff.user
+    staff.delete()
+    user.delete()
+    messages.success(request, "Staff member deleted successfully!")
+    return redirect('staffView')
