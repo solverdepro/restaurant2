@@ -39,7 +39,7 @@ def register_product(request):
                 messages.error(request, "Please fill in all required fields.")
                 return render(request, 'inventory/add_product.html')
 
-            # ✅ Create or get Supplier
+            #Create or get Supplier
             supplier = None
             if supplier_name:
                 supplier, _ = Supplier.objects.get_or_create(
@@ -47,7 +47,7 @@ def register_product(request):
                     defaults={'contact_number': supplier_contact}
                 )
 
-            # ✅ Create or get StorageLocation
+            #Create or get StorageLocation
             storage_location = None
             if storage_area:
                 storage_location, _ = StorageLocation.objects.get_or_create(
@@ -55,7 +55,7 @@ def register_product(request):
                     defaults={'shelf_number': shelf_number or '', 'section': section or ''}
                 )
 
-            # ✅ Create or get Product (definition only)
+            #Create or get Product (definition only)
             product, _ = Product.objects.get_or_create(
                 name=name,
                 defaults={
@@ -65,7 +65,7 @@ def register_product(request):
                 }
             )
 
-            # ✅ Create ProductBatch
+            #Create ProductBatch
             ProductBatch.objects.create(
                 product=product,
                 batch_number=batch_number,
@@ -104,10 +104,6 @@ def product_view(request):
             b.status = "in-stock"
         b.days_left = days_left
     return render(request,'inventory/product_view.html',{'batches': batches})
-
-def update_product(request, batch_id):
-    # logic to update product batch
-    pass
 
 def delete_product(request, batch_id):
     batch = ProductBatch.objects.get(id=batch_id)

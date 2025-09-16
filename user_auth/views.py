@@ -93,7 +93,7 @@ def register_staff(request):
                 'error': str(e)
             })
 
-        return redirect('home')  # Replace with your success URL
+        return redirect('staffView')  # Replace with your success URL
     return render(request,'user_auth/add_staff.html')
 
 
@@ -290,7 +290,7 @@ def edit_staff(request, staff_id):
             staff.save()
 
             messages.success(request, "Staff member updated successfully!")
-            return redirect('staff_view')
+            return redirect('staffView')
 
         except Exception as e:
             logger.error(f"Error updating staff: {str(e)}")

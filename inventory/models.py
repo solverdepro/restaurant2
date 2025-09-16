@@ -68,7 +68,7 @@ class ProductBatch(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["expiration_date"]  # FEFO ready!
+        ordering = ["expiration_date"] 
 
     def __str__(self):
         return f"{self.product.name} - Batch {self.batch_number} (exp: {self.expiration_date})"
