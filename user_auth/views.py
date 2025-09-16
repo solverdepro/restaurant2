@@ -310,3 +310,5 @@ def delete_staff(request, staff_id):
     user.delete()
     messages.success(request, "Staff member deleted successfully!")
     return redirect('staffView')
+
+
