@@ -121,9 +121,9 @@ def login(request):
 
         # Redirect based on role
         if role == 'Admin':
-            return redirect('admindashboard')
+            return redirect('cashierReport')
         elif role == 'Chef':
-            return redirect('chef_dashboard')
+            return redirect('chefDashboard')
         elif role == 'Cashier':
             return redirect('menu')
         elif role == 'Inventory':

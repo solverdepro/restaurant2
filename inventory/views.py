@@ -15,31 +15,37 @@ logger = logging.getLogger(__name__)
 def generate_batch_number():
     return f"BN-{uuid.uuid4().hex[:8].upper()}"
 
-def register_product(request):
+def add_product(request):
+    # Pass choices for dropdowns
+    category_choices = Product.CATEGORY_CHOICES
+    unit_choices = Product.UNIT_CHOICES
+    storage_choices = StorageLocation.objects.all()  # if it's a class method returning list of tuples
+
     if request.method == 'POST':
         try:
-            # Extract form data
             name = request.POST.get('name')
-            batch_number = request.POST.get('batchNumber') or generate_batch_number()
             category = request.POST.get('category')
-            manufacturing_date = request.POST.get('manufacturing_date')
-            expiration_date = request.POST.get('expiration_date')
-            quantity = request.POST.get('quantity')
             unit = request.POST.get('unit')
+            minimum_stock_level = request.POST.get('minimum_stock_level')
             supplier_name = request.POST.get('supplier_name')
             supplier_contact = request.POST.get('supplier_contact')
             storage_area = request.POST.get('storage_area')
             shelf_number = request.POST.get('shelf_number')
             section = request.POST.get('section')
-            minimum_stock_level = request.POST.get('minimum_stock_level')
-            price = request.POST.get('price')
-            notes = request.POST.get('notes', '')
+            additional_info = request.POST.get('additional_info', '')
 
-            if not all([name, category, manufacturing_date, expiration_date, quantity, unit]):
+            if not all([name, category, unit]):
                 messages.error(request, "Please fill in all required fields.")
-                return render(request, 'inventory/add_product.html')
+                return render(
+                    request, 
+                    'inventory/add_product.html',
+                    {
+                        'category_choices': category_choices,
+                        'unit_choices': unit_choices,
+                        'storage_choices': storage_choices
+                    }
+                )
 
-            #Create or get Supplier
             supplier = None
             if supplier_name:
                 supplier, _ = Supplier.objects.get_or_create(
@@ -47,7 +53,6 @@ def register_product(request):
                     defaults={'contact_number': supplier_contact}
                 )
 
-            #Create or get StorageLocation
             storage_location = None
             if storage_area:
                 storage_location, _ = StorageLocation.objects.get_or_create(
@@ -55,41 +60,88 @@ def register_product(request):
                     defaults={'shelf_number': shelf_number or '', 'section': section or ''}
                 )
 
-            #Create or get Product (definition only)
-            product, _ = Product.objects.get_or_create(
+            Product.objects.create(
                 name=name,
-                defaults={
-                    'category': category,
-                    'unit': unit,
-                    'minimum_stock_level': minimum_stock_level if minimum_stock_level else None
+                category=category,
+                unit=unit,
+                minimum_stock_level=minimum_stock_level if minimum_stock_level else None,
+                supplier=supplier,
+                storage_location=storage_location,
+                additional_info=additional_info
+            )
+
+            messages.success(request, "Product added successfully!")
+            return redirect('productView')
+
+        except Exception as e:
+            messages.error(request, f"Error adding product: {str(e)}")
+            return render(
+                request, 
+                'inventory/add_product.html',
+                {
+                    'category_choices': category_choices,
+                    'unit_choices': unit_choices,
+                    'storage_choices': storage_choices
                 }
             )
 
-            #Create ProductBatch
+    return render(
+        request, 
+        'inventory/add_product.html',
+        {
+            'category_choices': category_choices,
+            'unit_choices': unit_choices,
+            'storage_choices': storage_choices
+        }
+    )
+
+
+def add_batch(request):
+    products = Product.objects.all()
+    
+    if request.method == 'POST':
+        try:
+            product_id = request.POST.get('product')
+            batch_number = request.POST.get('batchNumber') or generate_batch_number()
+            manufacturing_date = request.POST.get('manufacturing_date')
+            expiration_date = request.POST.get('expiration_date')
+            quantity = request.POST.get('quantity')
+            price = request.POST.get('price')
+            notes = request.POST.get('notes', '')
+
+            if not all([product_id, manufacturing_date, expiration_date, quantity, price]):
+                messages.error(request, "Please fill in all required fields.")
+                return render(request, 'inventory/add_batch.html', {'products': products})
+
+            product = Product.objects.get(id=product_id)
+
+            # ✅ Check for duplicate batch for the same product
+            if ProductBatch.objects.filter(product=product, batch_number=batch_number).exists():
+                messages.error(request, f"A batch with number '{batch_number}' already exists for this product.")
+                return render(request, 'inventory/add_batch.html', {'products': products})
+
+
             ProductBatch.objects.create(
                 product=product,
                 batch_number=batch_number,
                 manufacturing_date=manufacturing_date,
                 expiration_date=expiration_date,
                 quantity=quantity,
-                supplier=supplier,
-                storage_location=storage_location,
                 price=price,
                 notes=notes
             )
 
-            messages.success(request, "Product batch registered successfully!")
-            return redirect('registerProduct')
+            messages.success(request, "Product batch added successfully!")
+            return redirect('productView')
 
         except Exception as e:
-            messages.error(request, f"Error registering product: {str(e)}")
-            return render(request, 'inventory/add_product.html')
+            messages.error(request, f"Error adding product batch: {str(e)}")
+            return render(request, 'inventory/add_batch.html', {'products': products})
 
-    context = {'default_batch_number': generate_batch_number()}
-    return render(request, 'inventory/add_product.html', context)
+    return render(request, 'inventory/add_batch.html', {'products': products})
 
 def product_view(request):
-    batches = ProductBatch.objects.select_related("product", "supplier", "storage_location")
+    batches = ProductBatch.objects.select_related("product", "product__supplier", "product__storage_location")
     today = timezone.now().date()
 
     for b in batches:
@@ -115,33 +167,27 @@ def update_product(request, batch_id):
     batch = ProductBatch.objects.get(id=batch_id)
     if request.method == 'POST':
         try:
-            # Extract form data
             name = request.POST.get('name')
-            batch_number = request.POST.get('batchNumber')
             category = request.POST.get('category')
-            manufacturing_date = request.POST.get('manufacturing_date')
-            expiration_date = request.POST.get('expiration_date')
-            quantity = request.POST.get('quantity')
             unit = request.POST.get('unit')
+            minimum_stock_level = request.POST.get('minimum_stock_level')
             supplier_name = request.POST.get('supplier_name')
             supplier_contact = request.POST.get('supplier_contact')
             storage_area = request.POST.get('storage_area')
             shelf_number = request.POST.get('shelf_number')
             section = request.POST.get('section')
-            minimum_stock_level = request.POST.get('minimum_stock_level')
+            additional_info = request.POST.get('additional_info', '')
+            batch_number = request.POST.get('batchNumber')
+            manufacturing_date = request.POST.get('manufacturing_date')
+            expiration_date = request.POST.get('expiration_date')
+            quantity = request.POST.get('quantity')
             price = request.POST.get('price')
             notes = request.POST.get('notes', '')
 
-            if not all([name, category, manufacturing_date, expiration_date, quantity, unit, batch_number, price]):
+            if not all([name, category, unit, batch_number, manufacturing_date, expiration_date, quantity, price]):
                 messages.error(request, "Please fill in all required fields.")
-                return render(request, 'inventory/update_product.html', {
-                    'batch': batch,
-                    'products': Product.objects.all(),
-                    'suppliers': Supplier.objects.all(),
-                    'storage_locations': StorageLocation.objects.all()
-                })
+                return render(request, 'inventory/update_product.html', {'batch': batch})
 
-            # Update or create Supplier
             supplier = None
             if supplier_name:
                 supplier, _ = Supplier.objects.get_or_create(
@@ -149,7 +195,6 @@ def update_product(request, batch_id):
                     defaults={'contact_number': supplier_contact}
                 )
 
-            # Update or create StorageLocation
             storage_location = None
             if storage_area:
                 storage_location, _ = StorageLocation.objects.get_or_create(
@@ -157,24 +202,21 @@ def update_product(request, batch_id):
                     defaults={'shelf_number': shelf_number or '', 'section': section or ''}
                 )
 
-            # Update or create Product
-            product, _ = Product.objects.get_or_create(
-                name=name,
-                defaults={
-                    'category': category,
-                    'unit': unit,
-                    'minimum_stock_level': minimum_stock_level if minimum_stock_level else None
-                }
-            )
+            # Update Product (static)
+            batch.product.name = name
+            batch.product.category = category
+            batch.product.unit = unit
+            batch.product.minimum_stock_level = minimum_stock_level if minimum_stock_level else None
+            batch.product.supplier = supplier
+            batch.product.storage_location = storage_location
+            batch.product.additional_info = additional_info
+            batch.product.save()
 
-            # Update ProductBatch
-            batch.product = product
+            # Update ProductBatch (dynamic)
             batch.batch_number = batch_number
             batch.manufacturing_date = manufacturing_date
             batch.expiration_date = expiration_date
             batch.quantity = quantity
-            batch.supplier = supplier
-            batch.storage_location = storage_location
             batch.price = price
             batch.notes = notes
             batch.save()
@@ -185,42 +227,31 @@ def update_product(request, batch_id):
         except Exception as e:
             logger.error(f"Error updating product batch: {str(e)}")
             messages.error(request, f"Error updating product: {str(e)}")
-            return render(request, 'inventory/update_product.html', {
-                'batch': batch,
-                'products': Product.objects.all(),
-                'suppliers': Supplier.objects.all(),
-                'storage_locations': StorageLocation.objects.all()
-            })
+            return render(request, 'inventory/update_product.html', {'batch': batch})
 
-    return render(request, 'inventory/update_product.html', {
-        'batch': batch,
-        'products': Product.objects.all(),
-        'suppliers': Supplier.objects.all(),
-        'storage_locations': StorageLocation.objects.all()
-    })
-
+    return render(request, 'inventory/update_product.html', {'batch': batch})
 def search_products(request):
+    # Ensure it's an AJAX request
     if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
         return JsonResponse({'error': 'Invalid request'}, status=400)
 
     search_query = request.GET.get('search', '').strip()
-    category = request.GET.get('category', '')
-    status = request.GET.get('status', '')
+    status = request.GET.get('status', '').strip()
 
-    batches = ProductBatch.objects.select_related('product', 'supplier', 'storage_location')
+    batches = ProductBatch.objects.select_related(
+        'product', 'product__supplier', 'product__storage_location'
+    )
     today = timezone.now().date()
 
-    # Apply filters
+    # ✅ Apply search filters (fixed supplier reference)
     if search_query:
         batches = batches.filter(
             models.Q(product__name__icontains=search_query) |
             models.Q(batch_number__icontains=search_query) |
-            models.Q(supplier__name__icontains=search_query)
+            models.Q(product__supplier__name__icontains=search_query)
         )
 
-    if category:
-        batches = batches.filter(product__category=category)
-
+    # ✅ Apply status filter
     if status:
         filtered_batches = []
         for batch in batches:
@@ -235,7 +266,7 @@ def search_products(request):
                 filtered_batches.append(batch.id)
         batches = batches.filter(id__in=filtered_batches)
 
-    # Prepare response data
+    # ✅ Prepare response data
     data = []
     for batch in batches:
         days_left = (batch.expiration_date - today).days
@@ -249,11 +280,11 @@ def search_products(request):
             'expiration_date': batch.expiration_date.strftime('%Y-%m-%d'),
             'days_left': days_left,
             'supplier': {
-                'name': batch.supplier.name if batch.supplier else '—',
-                'contact_number': batch.supplier.contact_number if batch.supplier else ''
+                'name': batch.product.supplier.name if batch.product.supplier else '—',
+                'contact_number': batch.product.supplier.contact_number if batch.product.supplier else ''
             },
             'edit_url': reverse('update_product', args=[batch.id]),
-            'delete_url': reverse('delete_product', args=[batch.id])
+            'delete_url': reverse('delete_product', args=[batch.id]),
         })
 
     return JsonResponse({'batches': data})

@@ -92,7 +92,7 @@
                 
                 <!-- Menu Button Above Sidebar -->
                 <div class="px-4 py-3 border-b dark:border-gray-700">
-                    <a href="{%url 'admindashboard'%}" onclick="showPage('customerPage')" class="flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors">
+                    <a href="{%url 'cashierReport'%}" onclick="showPage('customerPage')" class="flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
                         </svg>
@@ -129,6 +129,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width极速快3="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
                                 Add Product to Stock
+                            </a>
+                            <a href="{%url 'add_batch'%}" onclick="showPage('addProduct')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width极速快3="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Add New Product Batch
                             </a>
                         </div>
                     </div>
@@ -176,7 +182,7 @@
                             </svg>
                         </a>
                         <div id="recipeDropdown" class="dropdown-content ml-6 pl-2 border-l dark:border-gray-700">
-                            <a href="#" onclick="showPage('viewRecipes')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                            <a href="{% url 'recipe_management'%}" onclick="showPage('viewRecipes')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m极速快3 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 极速快3 01-2 2h-2a2 2 0 01-2-2z"></极速快3path>
                                 </svg>

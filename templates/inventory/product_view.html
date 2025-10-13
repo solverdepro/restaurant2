@@ -3,43 +3,50 @@
 
 {% block content %}
 <main class="p-8">
-    <!-- Page Header -->
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">Products in Stock</h2>
-        <a href="{% url 'registerProduct' %}">
-            <button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md flex items-center">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-                Add New Product
-            </button>
-        </a>
+
+    <!-- ✅ Hidden CSRF holder -->
+    <div id="csrf-holder" data-csrf="{{ csrf_token }}" style="display:none;">
+        {% csrf_token %}
     </div>
 
-    <!-- Search and Filter Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- ✅ Page Header -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center">
+            <h2 class="text-2xl font-bold">Products in Stock</h2>
+            <a href="{% url 'registerProduct' %}">
+                <button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md flex items-center transition-all">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Add New Product
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <!-- ✅ Search and Status Filter -->
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 🔍 Search -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Products</label>
                 <div class="relative">
-                    <input type="text" id="searchInput" placeholder="Search by name, batch, or supplier..." class="w-full px-4 py-2 pl-10 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    <input type="text" id="searchInput"
+                        placeholder="Search by name, batch, or supplier..."
+                        class="w-full px-4 py-2 pl-10 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
+                    <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                 </div>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-                <select id="categoryFilter" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option value="">All Categories</option>
-                    {% for value, label in batches.0.product.CATEGORY_CHOICES %}
-                        <option value="{{ value }}">{{ label }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+
+            <!-- 📦 Status -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                <select id="statusFilter" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <select id="statusFilter"
+                        class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm">
                     <option value="">All Status</option>
                     <option value="in-stock">In Stock</option>
                     <option value="low-stock">Low Stock</option>
@@ -50,59 +57,59 @@
         </div>
     </div>
 
-    <!-- Products Table -->
+    <!-- ✅ Products Table -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-gray-700">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product Name</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Batch Number</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Quantity</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Created At</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Updated At</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Expiration Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Supplier</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Product</th>
+                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Batch</th>
+                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Quantity</th>
+                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Price</th>
+                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Created</th>
+                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Updated</th>
+                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Expires</th>
+                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Supplier</th>
+                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="productTableBody" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <tbody id="productTableBody" class="divide-y divide-gray-100 dark:divide-gray-700">
                     {% for batch in batches %}
-                    <tr>
-                        <td>{{ batch.product.name }}</td>
-                        <td>{{ batch.batch_number }}</td>
-                        <td>{{ batch.quantity }} {{ batch.product.unit }}</td>
-                        <td>{{ batch.price }}</td>
-                        <td>{{ batch.created_at|date:"Y-m-d" }}</td>
-                        <td>{{ batch.updated_at|date:"Y-m-d" }}</td>
-                        <td>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                        <td class="px-4 py-2">{{ batch.product.name }}</td>
+                        <td class="px-4 py-2">{{ batch.batch_number }}</td>
+                        <td class="px-4 py-2">{{ batch.quantity }} {{ batch.product.unit }}</td>
+                        <td class="px-4 py-2">{{ batch.price }}</td>
+                        <td class="px-4 py-2">{{ batch.created_at|date:"Y-m-d" }}</td>
+                        <td class="px-4 py-2">{{ batch.updated_at|date:"Y-m-d" }}</td>
+                        <td class="px-4 py-2">
                             {{ batch.expiration_date }}
                             {% if batch.days_left >= 0 %}
-                                <span class="text-green-600">{{ batch.days_left }} days left</span>
+                                <span class="text-green-600 text-xs block">{{ batch.days_left }} days left</span>
                             {% else %}
-                                <span class="text-red-600">Expired</span>
+                                <span class="text-red-600 text-xs block">Expired</span>
                             {% endif %}
                         </td>
-                        <td>
+                        <td class="px-4 py-2">
                             {% if batch.supplier %}
-                                {{ batch.supplier.name }} <br>
-                                <span class="text-xs">{{ batch.supplier.contact_number }}</span>
+                                <span class="font-medium">{{ batch.supplier.name }}</span><br>
+                                <span class="text-xs text-gray-500">{{ batch.supplier.contact_number }}</span>
                             {% else %}
-                                —
+                                <span class="text-gray-400">—</span>
                             {% endif %}
                         </td>
-                        <td class="flex space-x-2">
-                            <a href="{% url 'update_product' batch.id %}"><button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button></a>
+                        <td class="px-4 py-2 flex space-x-2">
+                            <a href="{% url 'update_product' batch.id %}" class="text-indigo-600 hover:text-indigo-800 text-sm">Edit</a>
                             <form action="{% url 'delete_product' batch.id %}" method="post" onsubmit="return confirm('Are you sure?');">
                                 {% csrf_token %}
-                                <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
+                                <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
                             </form>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="text-center text-gray-500">No product batches available</td>
+                        <td colspan="9" class="text-center text-gray-500 py-4">No product batches available</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -111,82 +118,76 @@
     </div>
 </main>
 
+<!-- ✅ AJAX Search & Filter -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
+    const csrfToken = document.getElementById('csrf-holder').dataset.csrf;
+
     function fetchProducts() {
         const searchQuery = $('#searchInput').val();
-        const category = $('#categoryFilter').val();
         const status = $('#statusFilter').val();
 
         $.ajax({
             url: '{% url "search_products" %}',
             type: 'GET',
-            data: {
-                search: searchQuery,
-                category: category,
-                status: status
-            },
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
+            data: { search: searchQuery, status: status },
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             success: function(response) {
                 const tbody = $('#productTableBody');
                 tbody.empty();
 
                 if (response.batches.length === 0) {
-                    tbody.append('<tr><td colspan="9" class="text-center text-gray-500">No product batches available</td></tr>');
+                    tbody.append('<tr><td colspan="9" class="text-center text-gray-500 py-4">No product batches available</td></tr>');
                     return;
                 }
 
-                response.batches.forEach(function(batch) {
-                    const row = `
-                        <tr>
-                            <td>${batch.product_name}</td>
-                            <td>${batch.batch_number}</td>
-                            <td>${batch.quantity}</td>
-                            <td>${batch.price.toFixed(2)}</td>
-                            <td>${batch.created_at}</td>
-                            <td>${batch.updated_at}</td>
-                            <td>
+                response.batches.forEach(batch => {
+                    tbody.append(`
+                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            <td class="px-4 py-2">${batch.product_name}</td>
+                            <td class="px-4 py-2">${batch.batch_number}</td>
+                            <td class="px-4 py-2">${batch.quantity}</td>
+                            <td class="px-4 py-2">${batch.price.toFixed(2)}</td>
+                            <td class="px-4 py-2">${batch.created_at}</td>
+                            <td class="px-4 py-2">${batch.updated_at}</td>
+                            <td class="px-4 py-2">
                                 ${batch.expiration_date}
                                 ${batch.days_left >= 0
-                                    ? `<span class="text-green-600">${batch.days_left} days left</span>`
-                                    : '<span class="text-red-600">Expired</span>'}
+                                    ? `<span class="text-green-600 text-xs block">${batch.days_left} days left</span>`
+                                    : `<span class="text-red-600 text-xs block">Expired</span>`}
                             </td>
-                            <td>
-                                ${batch.supplier.name
-                                    ? `${batch.supplier.name}<br><span class="text-xs">${batch.supplier.contact_number}</span>`
-                                    : '—'}
+                            <td class="px-4 py-2">
+                                ${batch.supplier && batch.supplier.name
+                                    ? `<span class="font-medium">${batch.supplier.name}</span><br><span class="text-xs text-gray-500">${batch.supplier.contact_number}</span>`
+                                    : '<span class="text-gray-400">—</span>'}
                             </td>
-                            <td class="flex space-x-2">
-                                <a href="${batch.edit_url}"><button class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-3">Edit</button></a>
+                            <td class="px-4 py-2 flex space-x-2">
+                                <a href="${batch.edit_url}" class="text-indigo-600 hover:text-indigo-800 text-sm">Edit</a>
                                 <form action="${batch.delete_url}" method="post" onsubmit="return confirm('Are you sure?');">
-                                    <input type="hidden" name="csrfmiddlewaretoken" value="${$('input[name=csrfmiddlewaretoken]').val()}">
-                                    <button type="submit" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
+                                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
                                 </form>
                             </td>
                         </tr>
-                    `;
-                    tbody.append(row);
+                    `);
                 });
             },
-            error: function(xhr) {
-                console.error('Error fetching products:', xhr.responseText);
-                $('#productTableBody').html('<tr><td colspan="9" class="text-center text-red-500">Error loading products</td></tr>');
+            error: () => {
+                $('#productTableBody').html('<tr><td colspan="9" class="text-center text-red-500 py-4">Error loading products</td></tr>');
             }
         });
     }
 
-    // Trigger search on input change with debounce
+    // Trigger search with debounce
     let debounceTimer;
     $('#searchInput').on('input', function() {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(fetchProducts, 300);
     });
 
-    // Trigger search on filter change
-    $('#categoryFilter, #statusFilter').on('change', fetchProducts);
+    // Trigger on status change
+    $('#statusFilter').on('change', fetchProducts);
 
     // Initial load
     fetchProducts();

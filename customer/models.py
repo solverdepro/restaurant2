@@ -1,5 +1,7 @@
 from django.db import models
 from inventory.models import Product  
+from django.contrib.auth.models import User
+from django.utils import timezone
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey('Recipe', on_delete=models.CASCADE, related_name='recipe_ingredients')
@@ -31,4 +33,18 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class Order(models.Model):
+    order_id = models.CharField(max_length=50, unique=True)
+    cashier = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    date_time = models.DateTimeField(default=timezone.now)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    items = models.JSONField()  # [{"recipe_id": int, "name": str, "quantity": int, "item_total": float}]
+
+    def __str__(self):
+        return self.order_id
+
+    class Meta:
+        verbose_name_plural = "Orders"
     

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Edit Recipe{% endblock %}
+
+{% block content %}
+<main class="p-8">
+    <!-- Messages -->
+    {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+                <div class="p-2 rounded-md text-center text-sm {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Page Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">Edit Recipe</h2>
+        <a href="{% url 'recipe_management' %}">
+            <button class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">Back to Recipes</button>
+        </a>
+    </div>
+
+    <!-- Form -->
+    <form method="POST" enctype="multipart/form-data" class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-semibold mb-4">Recipe Information</h3>
+                <div class="mb-4">
+                    <label for="name" class="block text-sm font-medium">Name *</label>
+                    <input type="text" id="name" name="name" value="{{ recipe.name }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="description" class="block text-sm font-medium">Description</label>
+                    <textarea id="description" name="description" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500">{{ recipe.description }}</textarea>
+                </div>
+<div class="mb-4">
+    <label for="category" class="block text-sm font-medium">Category *</label>
+    <select id="category" name="category" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+        {% for value, label in category_choices %}
+            <option value="{{ value }}" {% if value == recipe.category %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+</div>
+                <div class="mb-4">
+                    <label for="price" class="block text-sm font-medium">Price (Tsh) *</label>
+                    <input type="number" step="0.01" id="price" name="price" value="{{ recipe.price }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" required>
+                </div>
+                <div class="mb-4">
+                    <label for="is_available" class="block text-sm font-medium">Available</label>
+                    <input type="checkbox" id="is_available" name="is_available" {% if recipe.is_available %}checked{% endif %} class="mt-1 rounded focus:ring-primary-500">
+                </div>
+                <div class="mb-4">
+                    <label for="image" class="block text-sm font-medium">Image</label>
+                    <input type="file" id="image" name="image" accept="image/*" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500">
+                    {% if recipe.image %}
+                        <img src="{{ recipe.image.url }}" alt="{{ recipe.name }}" class="mt-2 h-20 w-20 rounded-md object-cover">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="mt-6 flex justify-end space-x-4">
+            <a href="{% url 'recipe_management' %}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">Cancel</a>
+            <button type="submit" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Update Recipe</button>
+        </div>
+    </form>
+</main>
+{% endblock %}
