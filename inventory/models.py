@@ -64,24 +64,6 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-# class ProductBatch(models.Model):
-#     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="batches")
-#     batch_number = models.CharField(max_length=50)
-#     manufacturing_date = models.DateField()
-#     expiration_date = models.DateField()
-#     quantity = models.DecimalField(max_digits=10, decimal_places=2)
-#     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
-#     storage_location = models.ForeignKey(StorageLocation, on_delete=models.SET_NULL, null=True, blank=True)
-#     price = models.DecimalField(max_digits=10, decimal_places=2)
-#     notes = models.TextField(blank=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-
-#     class Meta:
-#         ordering = ["expiration_date"] 
-
-#     def __str__(self):
-#         return f"{self.product.name} - Batch {self.batch_number} (exp: {self.expiration_date})"
 
 class ProductBatch(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="batches")

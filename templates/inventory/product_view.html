@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load dict_extras %}
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
@@ -58,64 +59,83 @@
     </div>
 
     <!-- ✅ Products Table -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                <thead class="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                <tr>
+                    <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Product</th>
+                    <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Batch #</th>
+                    <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Quantity</th>
+                    <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Price</th>
+                    <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Expires</th>
+                    <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Status</th>
+                    <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Supplier</th>
+                    <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody" class="divide-y divide-gray-100 dark:divide-gray-700" >
+                {% for product in products %}
+                    {% with product_batches|get_item:product.id as batches %}
+                        {% if batches %}
+                            {% for batch in batches %}
+                                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                    <td class="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">
+                                        {{ product.name }}
+                                    </td>
+                                    <td class="px-4 py-2">{{ batch.batch_number }}</td>
+                                    <td class="px-4 py-2">{{ batch.quantity }} {{ product.unit }}</td>
+                                    <td class="px-4 py-2">{{ batch.price }}</td>
+                                    <td class="px-4 py-2">{{ batch.expiration_date }}</td>
+                                    <td class="px-4 py-2">
+                                        {% if batch.status == 'expired' %}
+                                            <span class="text-red-600 font-semibold">Expired</span>
+                                        {% elif batch.status == 'expiring-soon' %}
+                                            <span class="text-yellow-500 font-semibold">Expiring Soon</span>
+                                        {% elif batch.status == 'low-stock' %}
+                                            <span class="text-orange-500 font-semibold">Low Stock</span>
+                                        {% else %}
+                                            <span class="text-green-600 font-semibold">In Stock</span>
+                                        {% endif %}
+                                        <br>
+                                        <span class="text-xs text-gray-500">{{ batch.days_left }} days left</span>
+                                    </td>
+                                    <td class="px-4 py-2">
+                                        {% if product.supplier %}
+                                            <span class="font-medium">{{ product.supplier.name }}</span><br>
+                                            <span class="text-xs text-gray-500">{{ product.supplier.contact_number }}</span>
+                                        {% else %}
+                                            <span class="text-gray-400">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-2 flex space-x-2">
+                                        <a href="{% url 'update_product' product.id %}" class="text-indigo-600 hover:text-indigo-800 text-sm">Edit</a>
+                                        <form action="{% url 'delete_product' product.id %}" method="post" onsubmit="return confirm('Are you sure?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                                <td class="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">{{ product.name }}</td>
+                                <td colspan="7" class="px-4 py-2 text-center text-gray-500">
+                                    No batches found for this product.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    {% endwith %}
+                {% empty %}
                     <tr>
-                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Product</th>
-                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Batch</th>
-                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Quantity</th>
-                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Price</th>
-                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Created</th>
-                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Updated</th>
-                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Expires</th>
-                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Supplier</th>
-                        <th class="px-4 py-2 text-left font-medium uppercase tracking-wider">Actions</th>
+                        <td colspan="8" class="text-center text-gray-500 py-4">No products available</td>
                     </tr>
-                </thead>
-                <tbody id="productTableBody" class="divide-y divide-gray-100 dark:divide-gray-700">
-                    {% for batch in batches %}
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                        <td class="px-4 py-2">{{ batch.product.name }}</td>
-                        <td class="px-4 py-2">{{ batch.batch_number }}</td>
-                        <td class="px-4 py-2">{{ batch.quantity }} {{ batch.product.unit }}</td>
-                        <td class="px-4 py-2">{{ batch.price }}</td>
-                        <td class="px-4 py-2">{{ batch.created_at|date:"Y-m-d" }}</td>
-                        <td class="px-4 py-2">{{ batch.updated_at|date:"Y-m-d" }}</td>
-                        <td class="px-4 py-2">
-                            {{ batch.expiration_date }}
-                            {% if batch.days_left >= 0 %}
-                                <span class="text-green-600 text-xs block">{{ batch.days_left }} days left</span>
-                            {% else %}
-                                <span class="text-red-600 text-xs block">Expired</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-4 py-2">
-                            {% if batch.supplier %}
-                                <span class="font-medium">{{ batch.supplier.name }}</span><br>
-                                <span class="text-xs text-gray-500">{{ batch.supplier.contact_number }}</span>
-                            {% else %}
-                                <span class="text-gray-400">—</span>
-                            {% endif %}
-                        </td>
-                        <td class="px-4 py-2 flex space-x-2">
-                            <a href="{% url 'update_product' batch.id %}" class="text-indigo-600 hover:text-indigo-800 text-sm">Edit</a>
-                            <form action="{% url 'delete_product' batch.id %}" method="post" onsubmit="return confirm('Are you sure?');">
-                                {% csrf_token %}
-                                <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="9" class="text-center text-gray-500 py-4">No product batches available</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
 </main>
 
 <!-- ✅ AJAX Search & Filter -->
@@ -141,37 +161,37 @@ $(document).ready(function() {
                     tbody.append('<tr><td colspan="9" class="text-center text-gray-500 py-4">No product batches available</td></tr>');
                     return;
                 }
-
-                response.batches.forEach(batch => {
-                    tbody.append(`
-                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                            <td class="px-4 py-2">${batch.product_name}</td>
-                            <td class="px-4 py-2">${batch.batch_number}</td>
-                            <td class="px-4 py-2">${batch.quantity}</td>
-                            <td class="px-4 py-2">${batch.price.toFixed(2)}</td>
-                            <td class="px-4 py-2">${batch.created_at}</td>
-                            <td class="px-4 py-2">${batch.updated_at}</td>
-                            <td class="px-4 py-2">
-                                ${batch.expiration_date}
-                                ${batch.days_left >= 0
-                                    ? `<span class="text-green-600 text-xs block">${batch.days_left} days left</span>`
-                                    : `<span class="text-red-600 text-xs block">Expired</span>`}
-                            </td>
-                            <td class="px-4 py-2">
-                                ${batch.supplier && batch.supplier.name
-                                    ? `<span class="font-medium">${batch.supplier.name}</span><br><span class="text-xs text-gray-500">${batch.supplier.contact_number}</span>`
-                                    : '<span class="text-gray-400">—</span>'}
-                            </td>
-                            <td class="px-4 py-2 flex space-x-2">
-                                <a href="${batch.edit_url}" class="text-indigo-600 hover:text-indigo-800 text-sm">Edit</a>
-                                <form action="${batch.delete_url}" method="post" onsubmit="return confirm('Are you sure?');">
-                                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
-                                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
-                                </form>
-                            </td>
-                        </tr>
-                    `);
-                });
+response.batches.forEach(batch => {
+    tbody.append(`
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            <td class="px-4 py-2">${batch.product_name}</td>
+            <td class="px-4 py-2">${batch.batch_number}</td>
+            <td class="px-4 py-2">${batch.quantity}</td>
+            <td class="px-4 py-2">${batch.price !== '—' ? batch.price.toFixed(2) : '—'}</td>
+            <td class="px-4 py-2">${batch.expiration_date}</td>
+            <td class="px-4 py-2">
+                ${batch.status === 'expired' ? '<span class="text-red-600 font-semibold">Expired</span>' :
+                  batch.status === 'expiring-soon' ? '<span class="text-yellow-500 font-semibold">Expiring Soon</span>' :
+                  batch.status === 'low-stock' ? '<span class="text-orange-500 font-semibold">Low Stock</span>' :
+                  batch.status === 'no-batch' ? '<span class="text-gray-500 font-semibold">No Batch</span>' :
+                  '<span class="text-green-600 font-semibold">In Stock</span>'}
+                ${batch.days_left !== '—' ? `<br><span class="text-xs text-gray-500">${batch.days_left} days left</span>` : ''}
+            </td>
+            <td class="px-4 py-2">
+                ${batch.supplier && batch.supplier.name
+                    ? `<span class="font-medium">${batch.supplier.name}</span><br><span class="text-xs text-gray-500">${batch.supplier.contact_number}</span>`
+                    : '<span class="text-gray-400">—</span>'}
+            </td>
+            <td class="px-4 py-2 flex space-x-2">
+                <a href="${batch.edit_url}" class="text-indigo-600 hover:text-indigo-800 text-sm">Edit</a>
+                <form action="${batch.delete_url}" method="post" onsubmit="return confirm('Are you sure?');">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
+                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                </form>
+            </td>
+        </tr>
+    `);
+});
             },
             error: () => {
                 $('#productTableBody').html('<tr><td colspan="9" class="text-center text-red-500 py-4">Error loading products</td></tr>');
