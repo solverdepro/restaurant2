@@ -60,12 +60,20 @@
                 <div>
                     
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cashier</label>
-                    <select id="cashierFilter" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <!-- <select id="cashierFilter" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
                         <option value="all">All Cashiers</option>
                         {% for cashier in cashiers %}
                             <option value="{{ cashier.user.id }}">{{ cashier.user.get_full_name|default:cashier.user.username }}</option>
                         {% endfor %}
+                    </select> -->
+                    <select id="cashierFilter" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                        <option value="all">All Cashiers</option>
+                        {% for cashier in cashiers %}
+                            <option value="{{ cashier.id }}">{{ cashier.name }}</option>
+                        {% endfor %}
                     </select>
+
+
                 </div>
             </div>
             <!-- <button id="generateReport" class="mt-4 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Generate Report</button> -->
@@ -147,7 +155,7 @@
             </div>
         </div>
     </div>
-
+<!-- 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -280,6 +288,127 @@ $('#exportPdfForm').on('submit', function() {
     $('#exportCashier').val($('#cashierFilter').val());
 });
 
+</script> -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+$(document).ready(function() {
+    let revenueChart = null;
+
+    function fetchReport() {
+        const dateRange = $('#dateRange').val();
+        const fromDate = $('#fromDate').val();
+        const toDate = $('#toDate').val();
+        const cashier = $('#cashierFilter').val();
+
+        $.ajax({
+            url: '{% url "search_cashier_report" %}',
+            type: 'GET',
+            data: { date_range: dateRange, from_date: fromDate, to_date: toDate, cashier: cashier },
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            success: function(response) {
+                if (response.error) {
+                    $('#orderTableBody').html('<tr><td colspan="5" class="text-center text-red-500">Error loading transactions</td></tr>');
+                    return;
+                }
+
+                // Summary
+                $('#totalRevenue').text(`${Number(response.total_revenue).toFixed(2)} Tsh`);
+                $('#totalOrders').text(response.total_orders);
+
+                // Table
+                const tbody = $('#orderTableBody').empty();
+                if (!response.orders.length) {
+                    tbody.append('<tr><td colspan="5" class="text-center text-gray-500">No transactions available</td></tr>');
+                } else {
+                    response.orders.forEach(order => {
+                        const items = order.items.length > 90 ? order.items.slice(0, 87) + '...' : order.items;
+                        tbody.append(`
+                            <tr>
+                                <td class="px-6 py-4">${order.order_id}</td>
+                                <td class="px-6 py-4">${order.date_time}</td>
+                                <td class="px-6 py-4">${order.cashier}</td>
+                                <td class="px-6 py-4">${items}</td>
+                                <td class="px-6 py-4">${Number(order.total_amount).toFixed(2)} Tsh</td>
+                            </tr>
+                        `);
+                    });
+                }
+
+                // Chart
+                const labels = response.revenue_by_day.map(x => x.date);
+                const data = response.revenue_by_day.map(x => x.revenue);
+                if (revenueChart) revenueChart.destroy();
+                const ctx = document.getElementById('revenueChart').getContext('2d');
+                revenueChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Revenue (Tsh)',
+                            data: data,
+                            borderColor: '#e8731e',
+                            backgroundColor: 'rgba(232,115,30,0.2)',
+                            fill: true,
+                            tension: 0.3,
+                        }]
+                    },
+                    options: { scales: { y: { beginAtZero: true } } }
+                });
+
+                // Sync with PDF export
+                $('#exportDateRange').val(dateRange);
+                $('#exportFromDate').val(fromDate);
+                $('#exportToDate').val(toDate);
+                $('#exportCashier').val(cashier);
+            },
+            error: function() {
+                $('#orderTableBody').html('<tr><td colspan="5" class="text-center text-red-500">Error loading transactions</td></tr>');
+            }
+        });
+    }
+
+    // Filter behavior
+    $('#dateRange').on('change', function() {
+        const isCustom = $(this).val() === 'custom';
+        $('#fromDate, #toDate').prop('disabled', !isCustom);
+        if (!isCustom) $('#fromDate, #toDate').val('');
+        fetchReport();
+    });
+
+    $('#fromDate, #toDate, #cashierFilter').on('change', fetchReport);
+    fetchReport();
+
+    // $('#exportPdfForm').on('submit', function() {
+    //     $('#exportDateRange').val($('#dateRange').val());
+    //     $('#exportFromDate').val($('#fromDate').val());
+    //     $('#exportToDate').val($('#toDate').val());
+    //     $('#exportCashier').val($('#cashierFilter').val());
+        // });
+        $('#exportPdfForm').on('submit', function(e) {
+    e.preventDefault(); // stop AJAX reload interference
+
+    // Update hidden inputs
+    $('#exportDateRange').val($('#dateRange').val());
+    $('#exportFromDate').val($('#fromDate').val());
+    $('#exportToDate').val($('#toDate').val());
+    $('#exportCashier').val($('#cashierFilter').val());
+
+    // Build a query to open file directly in new tab for download
+    const form = $(this);
+    const actionUrl = form.attr('action');
+    const formData = form.serialize();
+
+    // Open file download in a new tab (so it doesn't interrupt JS on main page)
+    window.open(actionUrl + '?' + formData, '_blank');
+
+    // Optionally show a short notification
+    // alert('Generating PDF...');
+});
+
+    
+});
 </script>
 
 </main>

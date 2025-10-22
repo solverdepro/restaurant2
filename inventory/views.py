@@ -1,12 +1,22 @@
-from django.shortcuts import render, redirect,get_object_or_404
+from django.shortcuts import render, redirect,get_object_or_404,HttpResponse
 from django.contrib import messages
-from .models import Product, ProductBatch, Supplier, StorageLocation
+from .models import Product, ProductBatch, Supplier, StorageLocation, InventoryTransaction
 import uuid
 from django.urls import reverse
 from django.http import JsonResponse
 from django.utils import timezone
 import logging
+from django.db import models
 from django.db.models import Q
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
+from django.db.models import Sum, Count
+from datetime import datetime, timedelta
+from user_auth.models import Staff
+
 
 
 
@@ -176,13 +186,6 @@ def product_view(request):
         'products': products,
         'product_batches': product_batches
     })
-
-
-# def delete_product(request, batch_id):
-#     batch = ProductBatch.objects.get(id=batch_id)
-#     batch.delete()
-#     messages.success(request, "Product batch deleted successfully!")
-#     return redirect('productView')
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     product.delete()  # cascades to batches if you set on_delete=models.CASCADE in ProductBatch
@@ -190,73 +193,6 @@ def delete_product(request, product_id):
     return redirect('productView')
 
 
-# def update_product(request, batch_id):
-#     batch = ProductBatch.objects.get(id=batch_id)
-#     if request.method == 'POST':
-#         try:
-#             name = request.POST.get('name')
-#             category = request.POST.get('category')
-#             unit = request.POST.get('unit')
-#             minimum_stock_level = request.POST.get('minimum_stock_level')
-#             supplier_name = request.POST.get('supplier_name')
-#             supplier_contact = request.POST.get('supplier_contact')
-#             storage_area = request.POST.get('storage_area')
-#             shelf_number = request.POST.get('shelf_number')
-#             section = request.POST.get('section')
-#             additional_info = request.POST.get('additional_info', '')
-#             batch_number = request.POST.get('batchNumber')
-#             manufacturing_date = request.POST.get('manufacturing_date')
-#             expiration_date = request.POST.get('expiration_date')
-#             quantity = request.POST.get('quantity')
-#             price = request.POST.get('price')
-#             notes = request.POST.get('notes', '')
-
-#             if not all([name, category, unit, batch_number, manufacturing_date, expiration_date, quantity, price]):
-#                 messages.error(request, "Please fill in all required fields.")
-#                 return render(request, 'inventory/update_product.html', {'batch': batch})
-
-#             supplier = None
-#             if supplier_name:
-#                 supplier, _ = Supplier.objects.get_or_create(
-#                     name=supplier_name,
-#                     defaults={'contact_number': supplier_contact}
-#                 )
-
-#             storage_location = None
-#             if storage_area:
-#                 storage_location, _ = StorageLocation.objects.get_or_create(
-#                     area=storage_area,
-#                     defaults={'shelf_number': shelf_number or '', 'section': section or ''}
-#                 )
-
-#             # Update Product (static)
-#             batch.product.name = name
-#             batch.product.category = category
-#             batch.product.unit = unit
-#             batch.product.minimum_stock_level = minimum_stock_level if minimum_stock_level else None
-#             batch.product.supplier = supplier
-#             batch.product.storage_location = storage_location
-#             batch.product.additional_info = additional_info
-#             batch.product.save()
-
-#             # Update ProductBatch (dynamic)
-#             batch.batch_number = batch_number
-#             batch.manufacturing_date = manufacturing_date
-#             batch.expiration_date = expiration_date
-#             batch.quantity = quantity
-#             batch.price = price
-#             batch.notes = notes
-#             batch.save()
-
-#             messages.success(request, "Product batch updated successfully!")
-#             return redirect('productView')
-
-#         except Exception as e:
-#             logger.error(f"Error updating product batch: {str(e)}")
-#             messages.error(request, f"Error updating product: {str(e)}")
-#             return render(request, 'inventory/update_product.html', {'batch': batch})
-
-#     return render(request, 'inventory/update_product.html', {'batch': batch})
 
 def update_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -391,4 +327,215 @@ def search_products(request):
                 })
 
     return JsonResponse({'batches': data})
+
+def inventory_report(request):
+    staffs = Staff.objects.filter(role='Cashier')
+    transactions = InventoryTransaction.objects.select_related('batch__product', 'staff__user')
+
+    if request.method == 'POST' and request.POST.get('action') == 'export_pdf':
+        try:
+            date_range = request.POST.get('date_range', 'this_week')
+            from_date = request.POST.get('from_date')
+            to_date = request.POST.get('to_date')
+            transaction_type = request.POST.get('transaction_type', 'All Transactions')
+
+            # Filter transactions
+            filtered_transactions = InventoryTransaction.objects.select_related('batch__product', 'staff__user')
+            if transaction_type != 'All Transactions':
+                filtered_transactions = filtered_transactions.filter(transaction_type=transaction_type)
+
+            if date_range == 'today':
+                filtered_transactions = filtered_transactions.filter(timestamp__date=timezone.now().date())
+            elif date_range == 'this_week':
+                start_of_week = timezone.now().date() - timedelta(days=timezone.now().weekday())
+                filtered_transactions = filtered_transactions.filter(timestamp__date__gte=start_of_week)
+            elif date_range == 'this_month':
+                start_of_month = timezone.now().date().replace(day=1)
+                filtered_transactions = filtered_transactions.filter(timestamp__date__gte=start_of_month)
+            elif date_range == 'last_month':
+                last_month = timezone.now().date().replace(day=1) - timedelta(days=1)
+                start_of_last_month = last_month.replace(day=1)
+                filtered_transactions = filtered_transactions.filter(
+                    timestamp__date__gte=start_of_last_month,
+                    timestamp__date__lte=last_month
+                )
+            elif date_range == 'custom' and from_date and to_date:
+                filtered_transactions = filtered_transactions.filter(
+                    timestamp__date__gte=from_date,
+                    timestamp__date__lte=to_date
+                )
+
+            # Generate PDF
+            buffer = BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=A4)
+            styles = getSampleStyleSheet()
+            elements = []
+
+            # Title
+            elements.append(Paragraph("Inventory Transaction Report", styles['Title']))
+
+            # Date Range
+            date_text = f"Date Range: {date_range.replace('_', ' ').title()}"
+            if date_range == 'custom':
+                date_text = f"Date Range: {from_date} to {to_date}"
+            elements.append(Paragraph(date_text, styles['Normal']))
+            elements.append(Paragraph(f"Transaction Type: {transaction_type}", styles['Normal']))
+            elements.append(Paragraph("<br/><br/>", styles['Normal']))
+
+            # Table Data
+            data = [[
+                'Date & Time', 'Product', 'Batch No', 'Type', 'Quantity', 'Unit Price', 'Total Value', 'Staff'
+            ]]
+            for t in filtered_transactions:
+                staff_name = f"{t.staff.user.first_name} {t.staff.user.last_name}" if t.staff else '—'
+                data.append([
+                    t.timestamp.strftime('%Y-%m-%d %H:%M'),
+                    t.batch.product.name,
+                    t.batch.batch_number,
+                    t.transaction_type,
+                    f"{t.quantity} {t.batch.product.unit}",
+                    f"Tsh {t.unit_price:,.2f}",
+                    f"Tsh {t.total_value():,.2f}",
+                    staff_name
+                ])
+
+            table = Table(data)
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 12),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            elements.append(table)
+
+            doc.build(elements)
+            buffer.seek(0)
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="inventory_report.pdf"'
+            response.write(buffer.read())
+            buffer.close()
+            return response
+
+        except Exception as e:
+            logger.error(f"Error generating PDF: {str(e)}")
+            messages.error(request, f"Error generating PDF: {str(e)}")
+
+    return render(request, 'inventory/inventory_report.html', {'staffs': staffs, 'transactions': transactions})
+
+def search_inventory_report(request):
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+    date_range = request.GET.get('date_range', 'this_week')
+    from_date = request.GET.get('from_date', '')
+    to_date = request.GET.get('to_date', '')
+    transaction_type = request.GET.get('transaction_type', 'All Transactions')
+
+    transactions = InventoryTransaction.objects.select_related('batch__product', 'staff__user')
+
+    # Apply filters
+    if transaction_type != 'All Transactions':
+        transactions = transactions.filter(transaction_type=transaction_type)
+
+    if date_range == 'today':
+        transactions = transactions.filter(timestamp__date=timezone.now().date())
+    elif date_range == 'this_week':
+        start_of_week = timezone.now().date() - timedelta(days=timezone.now().weekday())
+        transactions = transactions.filter(timestamp__date__gte=start_of_week)
+    elif date_range == 'this_month':
+        start_of_month = timezone.now().date().replace(day=1)
+        transactions = transactions.filter(timestamp__date__gte=start_of_month)
+    elif date_range == 'last_month':
+        last_month = timezone.now().date().replace(day=1) - timedelta(days=1)
+        start_of_last_month = last_month.replace(day=1)
+        transactions = transactions.filter(
+            timestamp__date__gte=start_of_last_month,
+            timestamp__date__lte=last_month
+        )
+    elif date_range == 'custom' and from_date and to_date:
+        transactions = transactions.filter(
+            timestamp__date__gte=from_date,
+            timestamp__date__lte=to_date
+        )
+
+    # Summary data
+    stock_in = transactions.filter(transaction_type='Stock In').aggregate(
+        total_items=Count('id'),
+        total_value=Sum(models.F('quantity') * models.F('unit_price'))
+    )
+    stock_out = transactions.filter(transaction_type='Stock Out').aggregate(
+        total_items=Count('id'),
+        total_value=Sum(models.F('quantity') * models.F('unit_price'))
+    )
+    adjustments = transactions.filter(transaction_type='Adjustment').aggregate(
+        total_items=Count('id'),
+        total_value=Sum(models.F('quantity') * models.F('unit_price'))
+    )
+    most_active = transactions.values('batch__product__name').annotate(
+        transaction_count=Count('id')
+    ).order_by('-transaction_count').first()
+
+    # Chart data
+    days = [(timezone.now().date() - timedelta(days=x)).strftime('%a') for x in range(6, -1, -1)]
+    stock_in_data = []
+    stock_out_data = []
+    for day in days:
+        day_date = datetime.strptime(day, '%a').replace(
+            year=timezone.now().year, month=timezone.now().month, day=timezone.now().day
+        )
+        stock_in_data.append(
+            transactions.filter(
+                transaction_type='Stock In',
+                timestamp__date=day_date
+            ).aggregate(count=Count('id'))['count']
+        )
+        stock_out_data.append(
+            transactions.filter(
+                transaction_type='Stock Out',
+                timestamp__date=day_date
+            ).aggregate(count=Count('id'))['count']
+        )
+
+    # Prepare response
+    data = {
+        'transactions': [{
+            'timestamp': t.timestamp.strftime('%Y-%m-%d %H:%M'),
+            'product': t.batch.product.name,
+            'batch_number': t.batch.batch_number,
+            'transaction_type': t.transaction_type,
+            'quantity': f"{t.quantity} {t.batch.product.unit}",
+            'unit_price': float(t.unit_price),
+            'total_value': float(t.total_value()),
+            'staff': f"{t.staff.user.first_name} {t.staff.user.last_name}" if t.staff else '—'
+        } for t in transactions],
+        'summary': {
+            'stock_in': {
+                'items': stock_in['total_items'] or 0,
+                'value': float(stock_in['total_value'] or 0)
+            },
+            'stock_out': {
+                'items': stock_out['total_items'] or 0,
+                'value': float(stock_out['total_value'] or 0)
+            },
+            'adjustments': {
+                'items': adjustments['total_items'] or 0,
+                'value': float(adjustments['total_value'] or 0)
+            },
+            'most_active': {
+                'product': most_active['batch__product__name'] if most_active else '—',
+                'transactions': most_active['transaction_count'] if most_active else 0
+            }
+        },
+        'chart_data': {
+            'labels': days,
+            'stock_in': stock_in_data,
+            'stock_out': stock_out_data
+        }
+    }
+
+    return JsonResponse(data)
 
