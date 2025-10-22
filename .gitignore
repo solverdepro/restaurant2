@@ -12,9 +12,9 @@ db.sqlite3
 media/
 
 # Virtual environment
-venv/
-env/
-.venv/
+rest/
+rest/
+.rest/
 
 # IDEs
 .vscode/
