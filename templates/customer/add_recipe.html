@@ -1,125 +1,266 @@
-{%extends "base.html"%}
+{% extends "base.html" %}
+{% block title %}Add Recipe{% endblock %}
 
-{%block title%}Admin dashboard{%endblock%}
+{% block content %}
+<main class="p-6">
+    <div class="max-w-3xl mx-auto">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Register New Recipe</h2>
 
-{%block content%} 
+            {% if messages %}
+            {% for message in messages %}
+            <div class="mb-4 p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-700{% else %}bg-green-50 border border-green-200 text-green-700{% endif %}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
 
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
-                    <h2 class="text-2xl font-bold mb-6">Register New Recipe</h2>
-                    
-                    <form id="recipeForm" class="grid grid-cols-1 gap-6" method="POST" enctype="multipart/form-data">
-                             {% csrf_token %}
-                        <!-- Recipe Name -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recipe Name *</label>
-                            <input type="text" name="name" required class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                        </div>
-                        
-                        <!-- Recipe Description -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-                            <textarea name="description" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500" rows="3"></textarea>
-                        </div>
-                        
-                        <!-- Recipe Category -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category *</label>
-                            <select name="category" required class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                <option value="">Select Category</option>
-                                <option>Main Course</option>
-                                <option>Beverage</option>
-                            </select>
-                        </div>
-                        <!-- Price -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (Tsh) *</label>
-                            <input type="number" name="price" min="0" step="0.01" required class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                        </div>
+            <form id="recipeForm" method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
 
-                        <!-- Ingredients Section -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ingredients *</label>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Select ingredients used in this recipe</p>
-                            
-                            <!-- Ingredient list-->
-                            <select name="ingredients[]" multiple id="ingredientSelect" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500" size="10">
-                                  {% for product in products %}
-                                    <option value="{{ product.id }}" data-unit="{{ product.unit }}">{{ product }}</option> 
-                                  {% endfor %}
-                            </select>
-                            
-                            <!-- Ingredients Grid -->
-                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4" id="ingredientsGrid">
-                                <!-- Ingredients will be populated here -->
-                            </div>
-
-                            <!-- Selected Ingredients -->
-                            <div id="selectedIngredients" class="mt-4">
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Enter Quantity Of Each Ingredient Used Per Order:</p>
-                            <div id="ingredientInputs" class="grid gap-4"></div>
-                                 </div>
-                             </div>
-                            
-                        <!-- Recipe Image -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recipe Image</label>
-                            <div class="flex items-center justify-center w-full">
-                                <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500">
-                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                        <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                        </svg>
-                                        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG (MAX. 5MB)</p>
-                                    </div>
-                                    <input id="dropzone-file" name="image" type="file" class="hidden" accept="image/*" />
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- Form Actions -->
-                        <div class="flex justify-end space-x-4 pt-4">
-                            <button type="button" class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">Cancel</button>
-                            <button type="submit" class="px-6 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors">Register Recipe</button>
-                        </div>
-                    </form>
+                <!-- Recipe Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recipe Name <span class="text-red-500">*</span></label>
+                    <input type="text" name="name" required
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="e.g. Grilled Chicken">
                 </div>
-            </main>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                    <textarea name="description" rows="3"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="Describe this recipe..."></textarea>
+                </div>
+
+                <!-- Category & Price -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category <span class="text-red-500">*</span></label>
+                        <select name="category" required
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            <option value="">Select Category</option>
+                            <option value="Main Course">Main Course</option>
+                            <option value="Beverage">Beverage</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (Tsh) <span class="text-red-500">*</span></label>
+                        <input type="number" name="price" min="0" step="0.01" required
+                            class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            placeholder="0.00">
+                    </div>
+                </div>
+
+                <!-- INGREDIENTS -->
+                <div>
+                    <!-- Header row with toggle -->
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            Ingredients <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" onclick="doToggleIngredients()"
+                            style="display:flex; align-items:center; gap:4px; font-size:12px; color:#e8731e; font-weight:600; background:none; border:none; cursor:pointer; padding:0;">
+                            <svg id="ing-chevron" style="width:14px; height:14px; transition:transform 0.2s; transform:rotate(-90deg);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                            <span id="ing-label">Show</span>
+                        </button>
+                    </div>
+
+                    <!-- Collapsible section — hidden by default -->
+                    <div id="ing-section" style="display:none;">
+                        <p style="font-size:12px; color:#9ca3af; margin-bottom:10px;">Click an ingredient to expand and set its quantity.</p>
+
+                        <!-- Search box -->
+                        <div style="position:relative; margin-bottom:10px;">
+                            <svg style="position:absolute; left:10px; top:10px; width:16px; height:16px; color:#9ca3af;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+                            </svg>
+                            <input type="text" id="ing-search" placeholder="Search ingredients..."
+                                oninput="doSearchIngredients(this.value)"
+                                style="width:100%; padding:8px 12px 8px 34px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; box-sizing:border-box; outline:none;">
+                        </div>
+
+                        <!-- Ingredient accordion list -->
+                        <div id="ing-list" style="border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; max-height:280px; overflow-y:auto;">
+                            {% for product in products %}
+                            <div class="ing-item" data-name="{{ product.name|lower }}" style="border-bottom:1px solid #f3f4f6;">
+                                <!-- Row header -->
+                                <button type="button" onclick="doToggleIngredient(this)"
+                                    class="ing-row"
+                                    style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:transparent; border:none; cursor:pointer; text-align:left; transition:background 0.15s;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <span class="ing-check" style="width:16px; height:16px; border-radius:3px; border:2px solid #d1d5db; flex-shrink:0; display:flex; align-items:center; justify-content:center;"></span>
+                                        <span style="font-size:13px; font-weight:500; color:#374151;">{{ product.name }}</span>
+                                        <span style="font-size:11px; color:#9ca3af;">({{ product.unit }})</span>
+                                    </div>
+                                    <svg class="ing-row-chevron" style="width:14px; height:14px; color:#9ca3af; transition:transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+
+                                <!-- Quantity panel -->
+                                <div class="ing-panel" style="display:none; background:rgba(232,115,30,0.08); padding:10px 16px; border-top:1px solid rgba(232,115,30,0.2);">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <input type="hidden" name="ingredients[]" value="{{ product.id }}" disabled class="ing-hidden-input">
+                                        <label style="font-size:12px; font-weight:500; color:#6b7280; white-space:nowrap;">Quantity per order:</label>
+                                        <input type="number" name="quantity_{{ product.id }}" min="0.01" step="0.01" disabled
+                                            class="ing-qty-input"
+                                            style="width:110px; padding:6px 10px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; outline:none;"
+                                            placeholder="0.00">
+                                        <span style="font-size:12px; color:#9ca3af;">{{ product.unit }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div style="padding:24px; text-align:center; font-size:13px; color:#9ca3af;">No products available. Please add products to inventory first.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Selected count -->
+                    <p style="margin-top:6px; font-size:12px; color:#9ca3af;">
+                        Selected: <span id="ing-count" style="font-weight:600; color:#e8731e;">0</span> ingredient(s)
+                    </p>
+                </div>
+                <!-- END INGREDIENTS -->
+
+                <!-- Recipe Image -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recipe Image</label>
+                    <label id="imageDropzone"
+                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary-400 transition-colors">
+                        <div class="flex flex-col items-center justify-center gap-1" id="dropzoneContent">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            <p class="text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                            <p class="text-xs text-gray-400">PNG, JPG (max 5MB)</p>
+                        </div>
+                        <input id="dropzone-file" name="image" type="file" class="hidden" accept="image/*">
+                    </label>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-end gap-3 pt-2">
+                    <a href="{% url 'recipe_management' %}"
+                        class="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                        class="px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-sm font-medium transition-colors">
+                        Register Recipe
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
-    
+</main>
+
+<style>
+.ing-row:hover { background: rgba(232,115,30,0.1) !important; }
+</style>
+
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const select = document.getElementById('ingredientSelect');
-    const ingredientInputs = document.getElementById('ingredientInputs');
-    const selectedIds = new Set(); // Track selected product IDs to prevent duplicates
-    
-    function updateSelectedIngredients() {
-        ingredientInputs.innerHTML = '';
-        selectedIds.clear(); // Clear previous selections
-        
-        Array.from(select.selectedOptions).forEach(option => {
-            const productId = option.value;
-            if (!selectedIds.has(productId)) { // Only add if not already selected
-                selectedIds.add(productId);
-                const productName = option.text;
-                const productUnit = option.getAttribute('data-unit');
-                
-                const div = document.createElement('div');
-                div.className = 'flex items-center gap-2 mb-2';
-                div.innerHTML = `
-                    <input type="hidden" name="ingredients[]" value="${productId}">
-                    <span class="text-sm text-gray-700 dark:text-gray-300">${productName}</span>
-                    <input type="number" name="quantity_${productId}" min="0" step="0.01" required class="w-24 px-2 py-1 border rounded-md dark:bg-gray-700 dark:border-gray-800" placeholder="Quantity">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">${productUnit}</span>
-                    <button type="button" class="text-red-500 hover:text-red-700" onclick="this.parentElement.remove(); selectedIds.delete('${productId}');">Remove</button>
-                `;
-                ingredientInputs.appendChild(div);
-            }
-        });
+// ---- Show/Hide the whole ingredient section ----
+function doToggleIngredients() {
+    var sec = document.getElementById('ing-section');
+    var lbl = document.getElementById('ing-label');
+    var chv = document.getElementById('ing-chevron');
+    if (sec.style.display === 'none') {
+        sec.style.display = 'block';
+        lbl.textContent = 'Hide';
+        chv.style.transform = '';
+    } else {
+        sec.style.display = 'none';
+        lbl.textContent = 'Show';
+        chv.style.transform = 'rotate(-90deg)';
     }
-    
-    select.addEventListener('change', updateSelectedIngredients);
+}
+
+// ---- Toggle individual ingredient row ----
+function doToggleIngredient(btn) {
+    var item = btn.closest('.ing-item');
+    var panel = item.querySelector('.ing-panel');
+    var check = item.querySelector('.ing-check');
+    var chv = item.querySelector('.ing-row-chevron');
+    var hiddenInput = item.querySelector('.ing-hidden-input');
+    var qtyInput = item.querySelector('.ing-qty-input');
+
+    if (panel.style.display === 'none') {
+        // Open
+        panel.style.display = 'block';
+        chv.style.transform = 'rotate(180deg)';
+        btn.style.background = 'rgba(232,115,30,0.12)';
+        check.style.background = '#e8731e';
+        check.style.borderColor = '#e8731e';
+        check.innerHTML = '<svg style="width:10px;height:10px;" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>';
+        hiddenInput.disabled = false;
+        qtyInput.disabled = false;
+        qtyInput.focus();
+    } else {
+        // Close
+        panel.style.display = 'none';
+        chv.style.transform = '';
+        btn.style.background = 'transparent';
+        check.style.background = '';
+        check.style.borderColor = '#d1d5db';
+        check.innerHTML = '';
+        hiddenInput.disabled = true;
+        qtyInput.disabled = true;
+        qtyInput.value = '';
+    }
+    doUpdateCount();
+}
+
+// ---- Update selected count ----
+function doUpdateCount() {
+    var count = document.querySelectorAll('.ing-hidden-input:not([disabled])').length;
+    document.getElementById('ing-count').textContent = count;
+}
+
+// ---- Search filter ----
+function doSearchIngredients(query) {
+    query = query.toLowerCase().trim();
+    document.querySelectorAll('.ing-item').forEach(function(item) {
+        item.style.display = item.dataset.name.indexOf(query) !== -1 ? '' : 'none';
+    });
+}
+
+// ---- Image preview ----
+document.getElementById('dropzone-file').addEventListener('change', function() {
+    var file = this.files[0];
+    if (!file) return;
+    var content = document.getElementById('dropzoneContent');
+    content.innerHTML =
+        '<svg style="width:24px;height:24px;color:#e8731e;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' +
+        '<p style="font-size:13px;color:#e8731e;font-weight:500;">' + file.name + '</p>' +
+        '<p style="font-size:11px;color:#9ca3af;">' + (file.size / 1024).toFixed(1) + ' KB</p>';
+});
+
+// ---- Validate on submit ----
+document.getElementById('recipeForm').addEventListener('submit', function(e) {
+    var selected = document.querySelectorAll('.ing-hidden-input:not([disabled])');
+    if (selected.length === 0) {
+        e.preventDefault();
+        alert('Please select at least one ingredient.');
+        return;
+    }
+    var valid = true;
+    selected.forEach(function(inp) {
+        var item = inp.closest('.ing-item');
+        var qty = item.querySelector('.ing-qty-input');
+        if (!qty.value || parseFloat(qty.value) <= 0) {
+            qty.style.borderColor = '#ef4444';
+            valid = false;
+        } else {
+            qty.style.borderColor = '#d1d5db';
+        }
+    });
+    if (!valid) {
+        e.preventDefault();
+        alert('Please enter a valid quantity (> 0) for all selected ingredients.');
+    }
 });
 </script>
-{%endblock%}
+{% endblock %}

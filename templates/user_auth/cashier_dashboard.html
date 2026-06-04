@@ -30,65 +30,65 @@
         }
     </script>
     <style>
-        .dashboard-card {
-            transition: all 0.3s ease;
+        :root {
+            --primary:       #e8731e;
+            --primary-light: #f0943f;
+            --primary-dark:  #c45c10;
+            --primary-glow:  rgba(232, 115, 30, 0.55);
         }
+
+        @keyframes twinkle-glow {
+            0%   { box-shadow: 0 0 4px 1px var(--primary-glow); }
+            50%  { box-shadow: 0 0 18px 6px var(--primary-glow), 0 0 30px 10px rgba(232,115,30,0.25); }
+            100% { box-shadow: 0 0 4px 1px var(--primary-glow); }
+        }
+
+        /* Primary buttons twinkle */
+        .bg-primary-500 {
+            animation: twinkle-glow 2.4s ease-in-out infinite;
+            transition: background-color 0.2s, transform 0.15s;
+        }
+        .bg-primary-500:hover {
+            background-color: var(--primary-light) !important;
+            transform: scale(1.04);
+            animation-play-state: paused;
+            box-shadow: 0 0 22px 8px var(--primary-glow);
+        }
+        .bg-primary-500:active { background-color: var(--primary-dark) !important; transform: scale(0.97); }
+
+        .dashboard-card { transition: all 0.3s ease; }
         .dashboard-card:hover {
             transform: translateY(-3px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
         }
-        .recipe-item {
-            transition: all 0.3s ease;
-        }
-        .recipe-item:hover {
-            background-color: rgba(232, 115, 30, 0.05);
-        }
-        .availability-toggle {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 30px;
-        }
-        .availability-toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+        .recipe-item { transition: all 0.3s ease; }
+        .recipe-item:hover { background-color: rgba(232,115,30,0.05); }
+
+        /* Toggle switch */
+        .availability-toggle { position: relative; display: inline-block; width: 60px; height: 30px; }
+        .availability-toggle input { opacity: 0; width: 0; height: 0; }
         .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 34px;
+            position: absolute; cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 34px;
         }
         .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
+            position: absolute; content: "";
+            height: 22px; width: 22px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
         }
-        input:checked + .toggle-slider {
-            background-color: #10B981;
+        input:checked + .toggle-slider { background-color: #10B981; }
+        input:checked + .toggle-slider:before { transform: translateX(30px); }
+
+        .fade-in { animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        select:focus, input:focus, textarea:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(232,115,30,0.25) !important;
+            outline: none;
         }
-        input:checked + .toggle-slider:before {
-            transform: translateX(30px);
-        }
-        .fade-in {
-            animation: fadeIn 0.5s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        tbody tr:hover { background-color: rgba(232,115,30,0.06) !important; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen dark:bg-gray-900 dark:text-gray-200 min-h-screen transition-colors duration-200">
@@ -170,7 +170,7 @@
                             <!-- Recipes will be populated by JavaScript -->
                         </div>
                         <div>
-                            <button type="submit" class="btn-update group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                            <button type="submit" class="btn-update group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-blue focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                 Update Availability
                             </button>
                         </div>

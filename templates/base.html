@@ -16,7 +16,7 @@
                         primary: {
                             50: '#fef7ee',
                             100: '#fdecd6',
-                            200: '#极速快3f9d5ad',
+                            200: '#f9d5ad',
                             300: '#f3b679',
                             400: '#ec8e43',
                             500: '#e8731e',
@@ -33,50 +33,98 @@
     <style>
         .page { display: none; }
         .active-page { display: block; }
-        .nav-active { 
-            background-color: rgba(232, 115, 30, 0.1);
-            border-right: 3px solid #e8731e;
+
+        /* ── Consistent primary highlight colour ── */
+        :root {
+            --primary:       #e8731e;
+            --primary-light: #f0943f;
+            --primary-dark:  #c45c10;
+            --primary-glow:  rgba(232, 115, 30, 0.55);
         }
+
+        /* ── Twinkle / pulse-glow for primary buttons ── */
+        @keyframes twinkle-glow {
+            0%   { box-shadow: 0 0 4px 1px var(--primary-glow); }
+            50%  { box-shadow: 0 0 18px 6px var(--primary-glow), 0 0 30px 10px rgba(232,115,30,0.25); }
+            100% { box-shadow: 0 0 4px 1px var(--primary-glow); }
+        }
+
+        /* Apply twinkle to any element that carries the primary-500 bg */
+        .bg-primary-500,
+        [class*="bg-primary-5"] {
+            animation: twinkle-glow 2.4s ease-in-out infinite;
+            transition: background-color 0.2s, transform 0.15s;
+        }
+        .bg-primary-500:hover,
+        [class*="bg-primary-5"]:hover {
+            background-color: var(--primary-light) !important;
+            transform: scale(1.04);
+            animation-play-state: paused;
+            box-shadow: 0 0 22px 8px var(--primary-glow);
+        }
+        .bg-primary-500:active,
+        [class*="bg-primary-5"]:active {
+            background-color: var(--primary-dark) !important;
+            transform: scale(0.97);
+        }
+
+        /* ── Unified focus ring ── */
+        *:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+        select:focus, input:focus, textarea:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(232,115,30,0.25) !important;
+            outline: none;
+        }
+
+        /* ── Sidebar nav active / hover ── */
+        .nav-active {
+            background-color: rgba(232, 115, 30, 0.12);
+            border-right: 3px solid var(--primary);
+        }
+        .sidebar-nav a:hover {
+            color: var(--primary) !important;
+        }
+
+        /* ── Dropdown animation ── */
         .dropdown-content {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-out;
         }
-        .dropdown-open .dropdown-content {
-            max-height: 500px;
-        }
-        .dropdown-icon {
-            transition: transform 0.3s ease;
-        }
-        .dropdown-open .dropdown-icon {
-            transform: rotate(90deg);
-        }
-        
-        /* Scrollable sidebar styles */
+        .dropdown-open .dropdown-content { max-height: 500px; }
+        .dropdown-icon { transition: transform 0.3s ease; }
+        .dropdown-open .dropdown-icon { transform: rotate(90deg); }
+
+        /* ── Scrollable sidebar ── */
         .sidebar-container {
             height: 100vh;
             display: flex;
             flex-direction: column;
         }
-        .sidebar-header {
-            flex-shrink: 0;
-        }
+        .sidebar-header { flex-shrink: 0; }
         .sidebar-nav {
             flex: 1;
             overflow-y: auto;
         }
-        .sidebar-nav::-webkit-scrollbar {
-            width: 6px;
-        }
-        .sidebar-nav::-webkit-scrollbar-track {
-            background: transparent;
-        }
+        .sidebar-nav::-webkit-scrollbar { width: 6px; }
+        .sidebar-nav::-webkit-scrollbar-track { background: transparent; }
         .sidebar-nav::-webkit-scrollbar-thumb {
             background: #cbd5e0;
             border-radius: 3px;
         }
-        .dark .sidebar-nav::-webkit-scrollbar-thumb {
-            background: #4b5563;
+        .dark .sidebar-nav::-webkit-scrollbar-thumb { background: #4b5563; }
+
+        /* ── Table row hover highlight ── */
+        tbody tr:hover {
+            background-color: rgba(232, 115, 30, 0.06) !important;
+        }
+
+        /* ── Pagination / active page button ── */
+        .bg-primary-500.text-white {
+            animation: twinkle-glow 2.4s ease-in-out infinite;
         }
     </style>
 </head>
@@ -91,25 +139,34 @@
                 </div>
                 
                 <!-- Menu Button Above Sidebar -->
+                <!-- User Info (non-clickable) -->
                 <div class="px-4 py-3 border-b dark:border-gray-700">
-                    <a href="{%url 'cashierReport'%}" onclick="showPage('customerPage')" class="flex items-center justify-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path>
-                        </svg>
-                        Admin Dashboard
-                    </a>
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-primary-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                            {{ request.user.get_full_name|first|upper|default:request.user.username|first|upper }}
+                        </div>
+                        <div class="overflow-hidden">
+                            <p class="text-sm font-semibold text-gray-800 dark:text-white truncate">
+                                {{ request.user.get_full_name|default:request.user.username }}
+                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                {% if request.user.staff_profile %}{{ request.user.staff_profile.role }}{% elif request.user.is_superuser %}Admin{% endif %}
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <!-- Scrollable navigation section -->
             <nav class="sidebar-nav mt-4">
                 <div class="px-4 space-y-2 pb-4">
+
                     <!-- Inventory Management Dropdown -->
                     <div class="dropdown-group">
                         <a href="#" onclick="toggleDropdown('inventoryDropdown')" class="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                             <div class="flex items-center">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2极速快3v2M7 7h10"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                                 </svg>
                                 Inventory Management
                             </div>
@@ -120,19 +177,19 @@
                         <div id="inventoryDropdown" class="dropdown-content ml-6 pl-2 border-l dark:border-gray-700">
                             <a href="{% url 'productView'%}" onclick="showPage('viewProducts')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2极速快3v6a2 2 0 002 2极速快3h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                 </svg>
                                 View Products in Stock
                             </a>
                             <a href="{%url 'registerProduct'%}" onclick="showPage('addProduct')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width极速快3="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-widt="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
                                 Add Product to Stock
                             </a>
                             <a href="{%url 'add_batch'%}" onclick="showPage('addProduct')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width极速快3="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
                                 Add New Product Batch
                             </a>
@@ -143,17 +200,17 @@
                     <div class="dropdown-group">
                         <a href="#" onclick="toggleDropdown('staffDropdown')" class="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                             <div class="flex items-center">
-                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="极速快3http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2极速快3a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                 </svg>
                                 Staff Management
                             </div>
                             <svg class="dropdown-icon w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 极速快35l7 7-7 7"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
                         </a>
                         <div id="staffDropdown" class="dropdown-content ml-6 pl-2 border-l dark:border-gray-700">
-                            <a href="{% url 'staffView'%}" onclick="showPage('viewStaff')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg极速快3-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                            <a href="{% url 'staffView'%}" onclick="showPage('viewStaff')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
@@ -161,7 +218,7 @@
                             </a>
                             <a href="{%url 'addStaff'%}" onclick="showPage('addStaff')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3极速快3m0 0v3m0-3h3m-3 0h-3极速快3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                                 </svg>
                                 Add Staff
                             </a>
@@ -173,7 +230,7 @@
                         <a href="#" onclick="toggleDropdown('recipeDropdown')" class="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                             <div class="flex items-center">
                                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.极速快3704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 极速快3 01-3 0A1.5 1.5 0 013 15.546V5a1 1 0 011-1h16a1 1 0 011 1v10.546z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704  01-3 0A1.5 1.5 0 013 15.546V5a1 1 0 011-1h16a1 1 0 011 1v10.546z"></path>
                                 </svg>
                                 Recipe Management
                             </div>
@@ -184,13 +241,13 @@
                         <div id="recipeDropdown" class="dropdown-content ml-6 pl-2 border-l dark:border-gray-700">
                             <a href="{% url 'recipe_management'%}" onclick="showPage('viewRecipes')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m极速快3 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 极速快3 01-2 2h-2a2 2 0 01-2-2z"></极速快3path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2  01-2 2h-2a2 2 0 01-2-2z"></path>
                                 </svg>
                                 View Recipes
                             </a>
                             <a href="{%url 'addrecipe'%}" onclick="showPage('addRecipe')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0极速快3v6m0-6h6m-6 0H6"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
                                 Add Recipe
                             </a>
@@ -211,13 +268,13 @@
                             </svg>
                         </a>
                         <div id="reportsDropdown" class="dropdown-content ml-6 pl-2 border-l dark:border-gray-700">
-                            <a href="#" onclick="showPage('cashierReports')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                            <a href="{% url 'cashierReport' %}" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s极速快31.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 Cashier Reports
                             </a>
-                            <a href="#" onclick="showPage('inventoryReports')" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+                            <a href="{% url 'inventory_report' %}" class="flex items-center px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                 </svg>
@@ -238,14 +295,14 @@
                     </div>
                     <div class="flex items-center space-x-4">
                         <button id="themeToggle" onclick="toggleTheme()" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" viewBox="0 0 20 20" fill极速快3="currentColor">
-                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 01-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 极速快34 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2极速快3h1zm-7 4a1 1 极速快3 011 1极速快3v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707极速快3a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 01-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1  011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
                             </svg>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
                             </svg>
                         </button>
-                        <button class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md">Logout</button>
+                        <a href="{% url 'logout' %}" class="bg-primary-500 hover:bg-primary-600 text-white px-4 py-2 rounded-md text-sm font-medium">Logout</a>
                     </div>
                 </div>
             </header>
@@ -293,3 +350,5 @@
             dropdown.parentElement.classList.toggle('dropdown-open');
         }
     </script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

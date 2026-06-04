@@ -13,8 +13,6 @@ media/
 
 # Virtual environment
 rest/
-rest/
-.rest/
 
 # IDEs
 .vscode/

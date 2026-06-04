@@ -29,6 +29,36 @@
             }
         }
     </script>
+    <style>
+        :root {
+            --primary:       #e8731e;
+            --primary-light: #f0943f;
+            --primary-dark:  #c45c10;
+            --primary-glow:  rgba(232, 115, 30, 0.55);
+        }
+        @keyframes twinkle-glow {
+            0%   { box-shadow: 0 0 4px 1px var(--primary-glow); }
+            50%  { box-shadow: 0 0 18px 6px var(--primary-glow), 0 0 30px 10px rgba(232,115,30,0.25); }
+            100% { box-shadow: 0 0 4px 1px var(--primary-glow); }
+        }
+        .bg-primary-500 {
+            animation: twinkle-glow 2.4s ease-in-out infinite;
+            transition: background-color 0.2s, transform 0.15s;
+        }
+        .bg-primary-500:hover {
+            background-color: var(--primary-light) !important;
+            transform: scale(1.04);
+            animation-play-state: paused;
+            box-shadow: 0 0 22px 8px var(--primary-glow);
+        }
+        .bg-primary-500:active { background-color: var(--primary-dark) !important; transform: scale(0.97); }
+
+        select:focus, input:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px rgba(232,115,30,0.25) !important;
+            outline: none;
+        }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-200">
     <!-- Navigation Bar -->

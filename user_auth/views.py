@@ -116,8 +116,11 @@ def login(request):
             staff = user.staff_profile
             role = staff.role
         except Staff.DoesNotExist:
-            messages.error(request, 'No staff profile found for this user.')
-            return render(request, 'user_auth/login.html')
+            if user.is_superuser:
+                role = 'Admin'
+            else:
+                messages.error(request, 'No staff profile found for this user.')
+                return render(request, 'user_auth/login.html')
 
         # Redirect based on role
         if role == 'Admin':
@@ -193,7 +196,7 @@ def cashier_dashboard(request):
     # Check role
     if hasattr(request.user, 'staff_profile') and request.user.staff_profile.role != 'Cashier':
         messages.error(request, 'You are not authorized to access this page.')
-        return redirect('login_view')  
+        return redirect('userLogin')  
     
     recipes = Recipe.objects.all()
     return render(request, 'user_auth/cashier_dashboard.html', {'recipes': recipes})

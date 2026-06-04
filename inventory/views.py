@@ -13,7 +13,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 from io import BytesIO
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count,F
 from datetime import datetime, timedelta
 from user_auth.models import Staff
 
@@ -132,7 +132,7 @@ def add_batch(request):
                 return render(request, 'inventory/add_batch.html', {'products': products})
 
 
-            ProductBatch.objects.create(
+            batch = ProductBatch.objects.create(
                 product=product,
                 batch_number=batch_number,
                 manufacturing_date=manufacturing_date,
@@ -140,6 +140,20 @@ def add_batch(request):
                 quantity=quantity,
                 price=price,
                 notes=notes
+            )
+
+            # Auto-record a Stock In transaction for this batch
+            staff = None
+            if request.user.is_authenticated and hasattr(request.user, 'staff_profile'):
+                staff = request.user.staff_profile
+
+            InventoryTransaction.objects.create(
+                batch=batch,
+                transaction_type='Stock In',
+                quantity=batch.quantity,
+                unit_price=batch.price,
+                staff=staff,
+                notes=notes or f"Initial stock in for batch {batch.batch_number}"
             )
 
             messages.success(request, "Product batch added successfully!")
@@ -430,7 +444,7 @@ def search_inventory_report(request):
     if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
         return JsonResponse({'error': 'Invalid request'}, status=400)
 
-    date_range = request.GET.get('date_range', 'this_week')
+    date_range = request.GET.get('date_range', 'all')
     from_date = request.GET.get('from_date', '')
     to_date = request.GET.get('to_date', '')
     transaction_type = request.GET.get('transaction_type', 'All Transactions')
@@ -463,42 +477,64 @@ def search_inventory_report(request):
         )
 
     # Summary data
+    # stock_in = transactions.filter(transaction_type='Stock In').aggregate(
+    #     total_items=Count('id'),
+    #     total_value=Sum(models.F('quantity') * models.F('unit_price'))
+    # )
+    # stock_out = transactions.filter(transaction_type='Stock Out').aggregate(
+    #     total_items=Count('id'),
+    #     total_value=Sum(models.F('quantity') * models.F('unit_price'))
+    # )
+    # adjustments = transactions.filter(transaction_type='Adjustment').aggregate(
+    #     total_items=Count('id'),
+    #     total_value=Sum(models.F('quantity') * models.F('unit_price'))
+    # )
+    # most_active = transactions.values('batch__product__name').annotate(
+    #     transaction_count=Count('id')
+    # ).order_by('-transaction_count').first()
+    expr = F('quantity') * F('unit_price')
     stock_in = transactions.filter(transaction_type='Stock In').aggregate(
         total_items=Count('id'),
-        total_value=Sum(models.F('quantity') * models.F('unit_price'))
+        total_value=Sum(expr)
     )
     stock_out = transactions.filter(transaction_type='Stock Out').aggregate(
         total_items=Count('id'),
-        total_value=Sum(models.F('quantity') * models.F('unit_price'))
+        total_value=Sum(expr)
     )
     adjustments = transactions.filter(transaction_type='Adjustment').aggregate(
         total_items=Count('id'),
-        total_value=Sum(models.F('quantity') * models.F('unit_price'))
+        total_value=Sum(expr)
     )
-    most_active = transactions.values('batch__product__name').annotate(
-        transaction_count=Count('id')
-    ).order_by('-transaction_count').first()
+    most_active = (transactions
+                   .values('batch__product__name')
+                   .annotate(transaction_count=Count('id'))
+                   .order_by('-transaction_count')
+                   .first())
 
     # Chart data
-    days = [(timezone.now().date() - timedelta(days=x)).strftime('%a') for x in range(6, -1, -1)]
-    stock_in_data = []
-    stock_out_data = []
-    for day in days:
-        day_date = datetime.strptime(day, '%a').replace(
-            year=timezone.now().year, month=timezone.now().month, day=timezone.now().day
-        )
-        stock_in_data.append(
-            transactions.filter(
-                transaction_type='Stock In',
-                timestamp__date=day_date
-            ).aggregate(count=Count('id'))['count']
-        )
-        stock_out_data.append(
-            transactions.filter(
-                transaction_type='Stock Out',
-                timestamp__date=day_date
-            ).aggregate(count=Count('id'))['count']
-        )
+    days = [(timezone.now().date() - timedelta(days=x)) for x in range(6, -1, -1)]
+    labels = [d.strftime('%a') for d in days]
+    stock_in_data = [
+        transactions.filter(transaction_type='Stock In', timestamp__date=d).count()
+        for d in days
+    ]
+    stock_out_data = [
+        transactions.filter(transaction_type='Stock Out', timestamp__date=d).count()
+        for d in days
+    ]
+
+    # stock_in_data.append(
+    #     transactions.filter(
+    #         transaction_type='Stock In',
+    #         timestamp__date=day_date
+    #     ).aggregate(count=Count('id'))['count']
+    # )
+    # stock_out_data.append(
+    #     transactions.filter(
+    #         transaction_type='Stock Out',
+    #         timestamp__date=day_date
+    #     ).aggregate(count=Count('id'))['count']
+    # )
 
     # Prepare response
     data = {
@@ -531,7 +567,7 @@ def search_inventory_report(request):
             }
         },
         'chart_data': {
-            'labels': days,
+            'labels': labels,
             'stock_in': stock_in_data,
             'stock_out': stock_out_data
         }
