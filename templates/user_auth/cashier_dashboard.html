@@ -37,24 +37,12 @@
             --primary-glow:  rgba(232, 115, 30, 0.55);
         }
 
-        @keyframes twinkle-glow {
-            0%   { box-shadow: 0 0 4px 1px var(--primary-glow); }
-            50%  { box-shadow: 0 0 18px 6px var(--primary-glow), 0 0 30px 10px rgba(232,115,30,0.25); }
-            100% { box-shadow: 0 0 4px 1px var(--primary-glow); }
-        }
-
-        /* Primary buttons twinkle */
+        /* Primary buttons */
         .bg-primary-500 {
-            animation: twinkle-glow 2.4s ease-in-out infinite;
-            transition: background-color 0.2s, transform 0.15s;
+            transition: background-color 0.2s, opacity 0.15s;
         }
-        .bg-primary-500:hover {
-            background-color: var(--primary-light) !important;
-            transform: scale(1.04);
-            animation-play-state: paused;
-            box-shadow: 0 0 22px 8px var(--primary-glow);
-        }
-        .bg-primary-500:active { background-color: var(--primary-dark) !important; transform: scale(0.97); }
+        .bg-primary-500:hover { background-color: var(--primary-light) !important; }
+        .bg-primary-500:active { background-color: var(--primary-dark) !important; }
 
         .dashboard-card { transition: all 0.3s ease; }
         .dashboard-card:hover {

@@ -3,15 +3,6 @@
 
 {% block content %}
 <main class="p-8">
-    {% if messages %}
-        <div class="mb-6">
-            {% for message in messages %}
-                <div class="p-2 rounded-md text-center text-sm {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold">Inventory Transaction Report</h2>
@@ -23,6 +14,7 @@
                 <input type="hidden" name="from_date" id="pdf_from_date">
                 <input type="hidden" name="to_date" id="pdf_to_date">
                 <input type="hidden" name="transaction_type" id="pdf_transaction_type">
+                <input type="hidden" name="product" id="pdf_product">
                 <button type="submit" class="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-md text-gray-700 dark:text-gray-200 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
@@ -35,7 +27,7 @@
 
     <!-- Filters -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date Range</label>
                 <select id="dateRange" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
@@ -62,6 +54,15 @@
                     <option value="Stock In">Stock In</option>
                     <option value="Stock Out">Stock Out</option>
                     <option value="Adjustment">Adjustment</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product</label>
+                <select id="productFilter" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <option value="all">All Products</option>
+                    {% for product in products %}
+                        <option value="{{ product.id }}">{{ product.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
@@ -249,17 +250,19 @@ window.addEventListener('load', function () {
         var fromDate       = document.getElementById('fromDate').value;
         var toDate         = document.getElementById('toDate').value;
         var transType      = document.getElementById('transactionType').value;
+        var product        = document.getElementById('productFilter').value;
 
         // Sync hidden PDF fields
         document.getElementById('pdf_date_range').value      = dateRange;
         document.getElementById('pdf_from_date').value       = fromDate;
         document.getElementById('pdf_to_date').value         = toDate;
         document.getElementById('pdf_transaction_type').value = transType;
+        document.getElementById('pdf_product').value          = product;
 
         $.ajax({
             url: '{% url "search_inventory_report" %}',
             type: 'GET',
-            data: { date_range: dateRange, from_date: fromDate, to_date: toDate, transaction_type: transType },
+            data: { date_range: dateRange, from_date: fromDate, to_date: toDate, transaction_type: transType, product: product },
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             success: function (response) {
                 // --- Table ---
@@ -291,11 +294,17 @@ window.addEventListener('load', function () {
                 $('#resultCount').text(response.transactions.length);
 
                 // --- Summary cards ---
-                $('#stockInItems').text(response.summary.stock_in.items + ' items');
+                if (response.product_unit) {
+                    $('#stockInItems').text(response.summary.stock_in.quantity.toFixed(2) + ' ' + response.product_unit);
+                    $('#stockOutItems').text(response.summary.stock_out.quantity.toFixed(2) + ' ' + response.product_unit);
+                    $('#adjustmentsItems').text(response.summary.adjustments.quantity.toFixed(2) + ' ' + response.product_unit);
+                } else {
+                    $('#stockInItems').text(response.summary.stock_in.items + ' transactions');
+                    $('#stockOutItems').text(response.summary.stock_out.items + ' transactions');
+                    $('#adjustmentsItems').text(response.summary.adjustments.items + ' transactions');
+                }
                 $('#stockInValue').text('Tsh ' + response.summary.stock_in.value.toFixed(2) + ' total value');
-                $('#stockOutItems').text(response.summary.stock_out.items + ' items');
                 $('#stockOutValue').text('Tsh ' + response.summary.stock_out.value.toFixed(2) + ' total value');
-                $('#adjustmentsItems').text(response.summary.adjustments.items + ' items');
                 $('#adjustmentsValue').text('Tsh ' + response.summary.adjustments.value.toFixed(2) + ' total value');
                 $('#mostActiveProduct').text(response.summary.most_active.product);
                 $('#mostActiveTransactions').text(response.summary.most_active.transactions + ' transactions');
@@ -322,6 +331,7 @@ window.addEventListener('load', function () {
         fetchReport();
     });
     document.getElementById('transactionType').addEventListener('change', fetchReport);
+    document.getElementById('productFilter').addEventListener('change', fetchReport);
     document.getElementById('generateReport').addEventListener('click', fetchReport);
 
     // Initial load

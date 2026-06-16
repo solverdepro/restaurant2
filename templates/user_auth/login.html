@@ -39,11 +39,7 @@
             --primary-glow:  rgba(232, 115, 30, 0.55);
         }
 
-        @keyframes twinkle-glow {
-            0%   { box-shadow: 0 0 4px 1px var(--primary-glow); }
-            50%  { box-shadow: 0 0 18px 6px var(--primary-glow), 0 0 30px 10px rgba(232,115,30,0.25); }
-            100% { box-shadow: 0 0 4px 1px var(--primary-glow); }
-        }
+
 
         body { font-family: 'Poppins', sans-serif; }
 
@@ -71,19 +67,14 @@
             outline: none;
         }
 
-        /* Twinkle login button */
         .btn-login {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            animation: twinkle-glow 2.4s ease-in-out infinite;
-            transition: background 0.2s, transform 0.15s;
+            transition: background 0.2s, opacity 0.15s;
         }
         .btn-login:hover {
             background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
-            transform: scale(1.03);
-            animation-play-state: paused;
-            box-shadow: 0 0 22px 8px var(--primary-glow);
         }
-        .btn-login:active { transform: scale(0.97); }
+        .btn-login:active { opacity: 0.85; }
 
         .theme-toggle { transition: all 0.3s; }
         .theme-toggle:hover { transform: rotate(30deg); }

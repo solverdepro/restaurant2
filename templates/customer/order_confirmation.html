@@ -39,27 +39,23 @@
             --primary-dark:  #c45c10;
             --primary-glow:  rgba(232, 115, 30, 0.55);
         }
-        @keyframes twinkle-glow {
-            0%   { box-shadow: 0 0 4px 1px var(--primary-glow); }
-            50%  { box-shadow: 0 0 18px 6px var(--primary-glow), 0 0 30px 10px rgba(232,115,30,0.25); }
-            100% { box-shadow: 0 0 4px 1px var(--primary-glow); }
-        }
         .bg-primary-500 {
-            animation: twinkle-glow 2.4s ease-in-out infinite;
-            transition: background-color 0.2s, transform 0.15s;
+            transition: background-color 0.2s, opacity 0.15s;
         }
-        .bg-primary-500:hover {
-            background-color: var(--primary-light) !important;
-            transform: scale(1.04);
-            animation-play-state: paused;
-            box-shadow: 0 0 22px 8px var(--primary-glow);
-        }
-        .bg-primary-500:active { background-color: var(--primary-dark) !important; transform: scale(0.97); }
+        .bg-primary-500:hover { background-color: var(--primary-light) !important; }
+        .bg-primary-500:active { background-color: var(--primary-dark) !important; }
         select:focus, input:focus {
             border-color: var(--primary) !important;
             box-shadow: 0 0 0 3px rgba(232,115,30,0.25) !important;
             outline: none;
         }
+        @keyframes toast-progress-bar { from { width: 100%; } to { width: 0%; } }
+        .toast-success { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+        .toast-error   { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+        .toast-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+        .toast-info    { background: #eff6ff; border: 1px solid #93c5fd; color: #1e40af; }
+        .toast-show    { opacity: 1 !important; transform: translateX(0) !important; }
+        .toast-hide    { opacity: 0 !important; transform: translateX(120%) !important; transition: opacity 0.4s ease, transform 0.4s ease !important; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-200">
@@ -89,16 +85,16 @@
     <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <h2 class="text-2xl font-bold mb-6">Order Confirmation</h2>
         
-        <!-- Messages -->
-        {% if messages %}
-            <div class="mb-6">
-                {% for message in messages %}
-                    <div class="p-2 rounded-md text-center text-sm {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+        <!-- Toast Notification Container -->
+        <div id="toast-container" style="position:fixed;top:1.25rem;right:1.25rem;z-index:9999;display:flex;flex-direction:column;gap:0.625rem;max-width:22rem;pointer-events:none;">
+            {% for message in messages %}
+                <div class="toast {% if message.tags == 'error' %}toast-error{% elif message.tags == 'warning' %}toast-warning{% elif message.tags == 'info' %}toast-info{% else %}toast-success{% endif %}" role="alert" style="pointer-events:all;display:flex;align-items:flex-start;gap:0.75rem;padding:0.875rem 1rem;border-radius:0.75rem;box-shadow:0 8px 24px rgba(0,0,0,0.15);font-size:0.875rem;font-weight:500;opacity:0;transform:translateX(120%);transition:opacity 0.35s ease,transform 0.35s cubic-bezier(0.34,1.56,0.64,1);position:relative;overflow:hidden;">
+                    <span>{{ message }}</span>
+                    <button class="toast-close" aria-label="Close" style="margin-left:auto;cursor:pointer;opacity:0.6;background:none;border:none;color:inherit;">&#x2715;</button>
+                    <div class="toast-progress" style="position:absolute;bottom:0;left:0;height:3px;border-radius:0 0 0.75rem 0.75rem;animation:toast-progress-bar 5s linear forwards;{% if message.tags == 'error' %}background:#ef4444;{% elif message.tags == 'warning' %}background:#f59e0b;{% elif message.tags == 'info' %}background:#3b82f6;{% else %}background:#22c55e;{% endif %}"></div>
+                </div>
+            {% endfor %}
+        </div>
         
         <!-- Order Details -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8">
@@ -136,6 +132,21 @@
     </footer>
 
     <script>
+        // Toast Manager
+        document.addEventListener('DOMContentLoaded', function () {
+            const toasts = document.querySelectorAll('#toast-container .toast');
+            toasts.forEach(function (toast, index) {
+                setTimeout(function () { toast.classList.add('toast-show'); }, index * 120);
+                const autoDismiss = setTimeout(function () { dismissToast(toast); }, 5000 + index * 120);
+                const closeBtn = toast.querySelector('.toast-close');
+                if (closeBtn) closeBtn.addEventListener('click', function () { clearTimeout(autoDismiss); dismissToast(toast); });
+            });
+            function dismissToast(t) {
+                t.classList.remove('toast-show'); t.classList.add('toast-hide');
+                setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 420);
+            }
+        });
+
         // Toggle theme
         function toggleTheme() {
             const html = document.documentElement;

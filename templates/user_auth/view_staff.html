@@ -8,16 +8,6 @@
         {% csrf_token %}
     </div>
 
-    <!-- Messages -->
-    {% if messages %}
-        <div class="mb-6">
-            {% for message in messages %}
-                <div class="p-2 rounded-md text-center text-sm {% if message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-green-100 text-green-700{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 
     <!-- Page Header -->
     <div class="flex justify-between items-center mb-6">

@@ -7,13 +7,8 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8">
             <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6">Register New Recipe</h2>
 
-            {% if messages %}
-            {% for message in messages %}
-            <div class="mb-4 p-3 rounded-lg text-sm {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-700{% else %}bg-green-50 border border-green-200 text-green-700{% endif %}">{{ message }}</div>
-            {% endfor %}
-            {% endif %}
 
-            <form id="recipeForm" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <form id="recipeForm" method="POST" class="space-y-6">
                 {% csrf_token %}
 
                 <!-- Recipe Name -->
@@ -105,8 +100,7 @@
                                         <input type="hidden" name="ingredients[]" value="{{ product.id }}" disabled class="ing-hidden-input">
                                         <label style="font-size:12px; font-weight:500; color:#6b7280; white-space:nowrap;">Quantity per order:</label>
                                         <input type="number" name="quantity_{{ product.id }}" min="0.01" step="0.01" disabled
-                                            class="ing-qty-input"
-                                            style="width:110px; padding:6px 10px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; outline:none;"
+                                            class="ing-qty-input w-[110px] px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-gray-50 dark:bg-gray-750 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                                             placeholder="0.00">
                                         <span style="font-size:12px; color:#9ca3af;">{{ product.unit }}</span>
                                     </div>
@@ -125,21 +119,6 @@
                 </div>
                 <!-- END INGREDIENTS -->
 
-                <!-- Recipe Image -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Recipe Image</label>
-                    <label id="imageDropzone"
-                        class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-primary-400 transition-colors">
-                        <div class="flex flex-col items-center justify-center gap-1" id="dropzoneContent">
-                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                            </svg>
-                            <p class="text-sm text-gray-500"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                            <p class="text-xs text-gray-400">PNG, JPG (max 5MB)</p>
-                        </div>
-                        <input id="dropzone-file" name="image" type="file" class="hidden" accept="image/*">
-                    </label>
-                </div>
 
                 <!-- Actions -->
                 <div class="flex justify-end gap-3 pt-2">

@@ -5,30 +5,87 @@
     <style>
         body {
             font-family: "DejaVu Sans", sans-serif;
-            font-size: 12px;
+            font-size: 11px;
+            color: #1e293b;
+            margin: 0;
+            padding: 0;
+            border-top: 3.5px solid #e8731e;
+            padding-top: 15px;
         }
         h2 {
-            text-align: center;
-            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #e8731e;
+            margin-top: 0;
+            margin-bottom: 15px;
         }
         .meta {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            color: #475569;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+        .summary-card {
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .summary-title {
+            font-size: 9.5px;
+            font-weight: bold;
+            color: #e8731e;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .summary-grid {
+            display: table;
+            width: 100%;
+        }
+        .summary-col {
+            display: table-cell;
+            width: 50%;
+            vertical-align: top;
+        }
+        .summary-label {
+            font-size: 8.5px;
+            font-weight: bold;
+            color: #64748b;
+            margin-bottom: 3px;
+        }
+        .summary-value {
+            font-size: 13px;
+            font-weight: bold;
+            color: #1e293b;
         }
         table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 10px;
         }
         th, td {
-            border: 1px solid #ddd;
-            padding: 6px;
-            text-align: left;
+            border: 1px solid #cbd5e1;
+            padding: 8px 10px;
+            font-size: 9px;
+            vertical-align: middle;
         }
         th {
             background-color: #e8731e;
             color: white;
+            font-weight: bold;
         }
-        .summary {
-            margin-bottom: 15px;
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .text-right {
+            text-align: right;
         }
     </style>
 </head>
@@ -41,33 +98,42 @@
     <strong>Cashier:</strong> {{ cashier_name }}
 </div>
 
-<div class="summary">
-    <strong>Total Orders:</strong> {{ total_orders }} <br>
-    <strong>Total Revenue:</strong> {{ total_revenue }} Tsh
+<div class="summary-card">
+    <div class="summary-title">Report Summary</div>
+    <div class="summary-grid">
+        <div class="summary-col">
+            <div class="summary-label">TOTAL ORDERS</div>
+            <div class="summary-value">{{ total_orders }} orders</div>
+        </div>
+        <div class="summary-col">
+            <div class="summary-label">TOTAL REVENUE</div>
+            <div class="summary-value">Tsh {{ total_revenue|floatformat:2 }}</div>
+        </div>
+    </div>
 </div>
 
 <table>
     <thead>
         <tr>
-            <th>Order ID</th>
-            <th>Date & Time</th>
-            <th>Cashier</th>
-            <th>Items</th>
-            <th>Amount (Tsh)</th>
+            <th style="width: 15%;">Order ID</th>
+            <th style="width: 20%;">Date & Time</th>
+            <th style="width: 25%;">Cashier</th>
+            <th style="width: 25%;">Items</th>
+            <th style="width: 15%; text-align: right;">Amount</th>
         </tr>
     </thead>
     <tbody>
         {% for order in orders %}
         <tr>
-            <td>{{ order.order_id }}</td>
-            <td>{{ order.date_time|date:"Y-m-d H:i" }}</td>
+            <td class="text-center">{{ order.order_id }}</td>
+            <td class="text-center">{{ order.date_time|date:"Y-m-d H:i" }}</td>
             <td>{{ order.cashier_name }}</td>
             <td>{{ order.items }}</td>
-            <td>{{ order.total_amount }}</td>
+            <td class="text-right">Tsh {{ order.total_amount|floatformat:2 }}</td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="5" style="text-align:center">No transactions</td>
+            <td colspan="5" class="text-center" style="color: #64748b; padding: 20px;">No transactions found.</td>
         </tr>
         {% endfor %}
     </tbody>
